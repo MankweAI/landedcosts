@@ -1,0 +1,626 @@
+spec_version: "1.0"
+title: "LandedCost OS — Project Source of Truth (Machine-Readable)"
+status: "active"
+last_updated: "2026-02-14"
+product_name: "LandedCost OS"
+wedge_scope:
+  origin_fixed_phase_1: "china"
+  destination_fixed_phase_1: "south-africa"
+  expansion_later: ["other origins", "other destinations"]
+
+north_star:
+  soul_statement: "Decision-grade landed cost + import-readiness report that answers in <30 seconds: real cost, what can go wrong, next steps, and likely profitability."
+  time_to_value_seconds_lt: 30
+  positioning_rules:
+    - "Not a calculator in spirit; a business decision tool."
+    - "Each pSEO page is a complete standalone product page (decision report + interactive widgets)."
+  mission_query: "How much will it cost to import X from China into South Africa — and what do I need to do?"
+  promise:
+    - "Collapse tariff complexity into duty/VAT/levies + landed cost per unit."
+    - "Where available, show preference eligibility and required documents."
+  success_metrics_primary:
+    - id: "t2v"
+      description: "User sees meaningful computed outputs on page load (SSR) without interaction."
+      target: ">=80% of money-page sessions see Result Preview + Breakdown within first viewport."
+    - id: "calc_completion"
+      description: "User runs at least one calculation (or accepts a preset and reruns)."
+      target: ">=25% of money-page sessions"
+    - id: "pseo_safety"
+      description: "No thin/duplicate indexing."
+      target: "0 NOINDEX URLs in sitemap; canonical rules pass in CI"
+
+constraints:
+  acquisition_model:
+    pseo_only_growth_engine: true
+    disallow_outbound: true
+    disallow_paid_ads: true
+    money_pages_are_tools_not_articles: true
+  integration_constraint:
+    free_zero_cost_apis_only: true
+    disallow_paid_data_feeds_for_core: true
+  saas_model:
+    free_experience:
+      must_be_complete_without_login_for_indexable_pages: true
+      rule: "User can run calculations and get decision-grade outputs without login."
+    paywall:
+      rule: "Only ask for signup/subscription once value is proven (exports/save/alerts/watchlists)."
+      premium_examples:
+        - "Save scenarios / workspace history"
+        - "Export PDF/CSV"
+        - "Watchlists + alerts (tariff/ITAC changes, FX watch)"
+        - "Multi-country (future)"
+        - "API/embed (future)"
+
+users_and_buyers:
+  primary_users_sa_wedge:
+    - "Importing SMEs / mid-market retailers, distributors, manufacturers"
+    - "3PLs / freight forwarders / brokers needing customer-facing calculators/widgets"
+    - "Cross-border ecom merchants importing into SA"
+  economic_buyer: "Ops/logistics manager, CFO, or founder who owns import P&L and compliance risk"
+  key_jobs_to_be_done:
+    - "Decide if an import is likely profitable given costs, taxes, FX risk, margins."
+    - "Identify required documents + obvious compliance red flags before spending money."
+    - "Compare scenarios quickly (incoterm, freight, margin, FX, quantity)."
+
+tech_stack:
+  frontend:
+    framework: "Next.js (App Router)"
+    language: "TypeScript"
+    styling:
+      - "TailwindCSS"
+      - "shadcn/ui (component primitives)"
+    charts: "Recharts (optional)"
+  backend:
+    runtime: "Node (Next.js server functions + route handlers)"
+    db: "PostgreSQL (local dev via docker-compose)"
+    orm: "Prisma"
+  auth:
+    phase_1: "none (gated actions prompt signup UI only; no real accounts)"
+    later: "Clerk"
+  observability:
+    phase_1_minimum: ["server logs", "event table in DB (optional)"]
+    later: ["PostHog or similar (must be free tier if used)"]
+  testing:
+    unit: "Vitest or Jest"
+    e2e: "Playwright"
+    ci: "GitHub Actions"
+
+routes_and_page_types:
+  route_group: "(seo)"
+  url_patterns:
+    product_money_page:
+      pattern: "/import-duty-vat-landed-cost/{clusterSlug}/from/{originIso}/to/{destIso}"
+      example: "/import-duty-vat-landed-cost/solar-panels/from/china/to/south-africa"
+      phase_1_constraints:
+        destIso_must_equal: "south-africa"
+        originIso_allowed: ["china"] # can expand later
+    hs_money_page:
+      pattern: "/import-duty-vat-landed-cost/hs/{hs6}/from/{originIso}/to/{destIso}"
+      example: "/import-duty-vat-landed-cost/hs/854140/from/china/to/south-africa"
+  supporting_routes:
+    tools:
+      - "/calculator"
+      - "/hs-classifier"
+      - "/compare"
+    seo_hubs:
+      - "/import-duty-vat-landed-cost" # directory/finder
+      - "/import-duty-vat-landed-cost/hs/{hs6}" # HS hub page
+    marketing:
+      - "/"
+      - "/pricing"
+      - "/how-it-works"
+      - "/hs-codes"
+      - "/contact"
+    saas_shell_routes:
+      - "/dashboard"
+      - "/dashboard/saved"
+      - "/dashboard/watchlist"
+      - "/settings"
+
+design_system_and_shell:
+  global_style:
+    background: "white"
+    palette: "varying blues (primary/secondary)"
+    intent:
+      - "Users immediately perceive: this is an app, not a blog."
+      - "Monetization CTAs always present but never block core value."
+  saas_shell_requirement:
+    desktop_wide:
+      layout:
+        - "Left sidebar (persistent, collapsible)"
+        - "Top bar (sticky)"
+        - "Main content"
+      sidebar:
+        widths_px:
+          expanded: 260
+          collapsed: 72
+        sections_in_order:
+          - id: "logo_product"
+            items: ["Logo", "Product name"]
+          - id: "primary_nav"
+            items:
+              - "Calculator (Money Pages)"
+              - "HS Code Finder"
+              - "Compare Scenarios"
+              - "Saved Scenarios (locked icon if not logged in / not premium)"
+              - "Watchlist & Alerts (locked icon)"
+          - id: "secondary_nav"
+            items:
+              - "Tariff Versions / Data Freshness"
+              - "Help / FAQ"
+          - id: "monetization_block"
+            sticky_at_bottom: true
+            states:
+              logged_out:
+                cta_text: "Sign up to save & download"
+              logged_in_free:
+                cta_text: "Upgrade to export + watchlist"
+              premium:
+                cta_text: "Manage plan"
+    mobile:
+      top_bar:
+        sticky: true
+        left: "Logo (tap -> home)"
+        right: "Sign up / Upgrade CTA"
+      navigation:
+        choose_one_but_consistent: true
+        option_a_recommended:
+          type: "bottom_nav"
+          items: ["Calculator", "HS Finder", "Compare", "Saved (locked)"]
+        option_b:
+          type: "hamburger_drawer"
+          use_when: "Bottom nav conflicts with sticky action bar height."
+      sticky_action_bar_money_pages_only:
+        required: true
+        actions: ["Save", "Export", "Compare", "Watchlist"]
+        rule: "Action bar is actions; nav is sections; avoid stacked UI height."
+
+money_page_contract:
+  applies_to: ["product_money_page", "hs_money_page"]
+  positioning: "Not an article; a fully usable tool page."
+  must_be_usable_without_login: true
+  ssr_required: true
+  above_the_fold_win_screen_must_include_in_order:
+    - "Breadcrumbs"
+    - "H1: Import duty & landed cost for {X} from {Y} -> South Africa"
+    - "Subtitle (one sentence orientation)"
+    - "CalcCard (minimal inputs + HS helper inline)"
+    - "Result Preview + ConfidenceBadge (before user edits inputs)"
+  below_the_fold_blocks_must_include_in_order:
+    - "Breakdown block with 'Why drawer' per line item (Duty, VAT, fees)"
+    - "Scenario presets (3 SSR presets + one-click apply)"
+    - "Doc checklist (grouped)"
+    - "Preference eligibility (traffic-light; may be 'unknown' initially)"
+    - "Risk callouts"
+    - "InternalLinkGrid (meaningful related tools/pages)"
+    - "Next best actions (context-aware CTAs)"
+  required_shared_components_inventory:
+    - "CalcCard"
+    - "BreakdownTable"
+    - "ConfidenceBadge"
+    - "DocChecklist"
+    - "PreferencePill"
+    - "RiskBanner"
+    - "ScenarioTabs"
+    - "StickyActionBar"
+    - "InternalLinkGrid"
+    - "VerdictCard"
+    - "SensitivityCard"
+    - "ScenarioPresetCard"
+    - "PremiumCtaCard"
+  calc_card_minimal_inputs:
+    - "Origin selector (explicit)"
+    - "Incoterm selector (FOB/CIF/DDP…)"
+    - "Freight/insurance fields with anti-double-counting clarity"
+    - "Importer type (VAT vendor vs non-vendor)"
+    - "Quantity (optional unit measures)"
+    - "FX rate input or FX mode (spot/manual)"
+    - "Target selling price (retail/B2B/wholesale) + margin mode"
+  hs_helper_inline_drawer:
+    flow:
+      - "User types description -> show 3-5 HS candidates with confidence + warnings."
+      - "Ask 1-3 clarifying questions only when needed."
+      - "User selects HS -> calculator reruns."
+  outputs_immediately_visible:
+    - "Duty breakdown"
+    - "VAT estimate"
+    - "Total taxes"
+    - "Landed cost per unit"
+    - "Confidence/warning labels"
+  why_drawer_auditability:
+    required_for: ["Duty", "VAT", "fees"]
+    must_include:
+      - "Formula"
+      - "Values used"
+      - "Rates applied"
+      - "Tariff version / effective date"
+      - "Official source pointer (short)"
+  scenario_presets:
+    ssr_requirement_hard: true
+    presets_required: 3
+    preset_examples: ["R10k", "R50k", "R250k"]
+    interaction_requirement: "Preset buttons apply values instantly and rerun calculation."
+  docs_and_next_steps:
+    checklist_grouping_required:
+      ["Always required", "Commonly required", "If applicable"]
+    doc_item_requirements:
+      - "Short 'why' tooltip supported."
+      - "Zero-PDF mindset: structured guidance, not endless PDF links."
+  sticky_action_bar:
+    required_actions_post_calc:
+      ["Save", "Export (PDF/CSV)", "Compare scenarios", "Watchlist (alert)"]
+    logged_out_behavior: "Save/Export prompts sign-in (does not fail silently)."
+  desktop_money_page_grid:
+    columns: 12
+    main_cols: 8
+    right_rail_cols: 4
+    right_rail_cards_in_order:
+      ["VerdictCard", "SensitivityCard", "ScenarioPresetCard", "PremiumCtaCard"]
+
+core_calculation_engine:
+  primary_goal: "Help importer decide whether import is likely profitable."
+  compute_mode:
+    server: "SSR computes initial outputs + presets for each money page."
+    client: "Client edits inputs and re-runs via API route /api/calc."
+  inputs:
+    - "Product cluster OR explicit HS6"
+    - "Origin (phase 1: china)"
+    - "Destination (phase 1: south-africa)"
+    - "Incoterm"
+    - "FOB/value"
+    - "Freight"
+    - "Insurance"
+    - "Other fees (optional)"
+    - "FX (manual or spot)"
+    - "Quantity & units"
+    - "Importer VAT vendor flag"
+    - "Selling price (retail/B2B/wholesale) OR margin target"
+  outputs:
+    - "Duty amount(s) and rate(s)"
+    - "VAT estimate"
+    - "Total taxes"
+    - "Landed cost total"
+    - "Landed cost per unit"
+    - "Gross margin estimate"
+    - "Profitability verdict (simple) + confidence badge"
+    - "Explainability drawer per line item"
+  confidence_model_mvp:
+    labels: ["high", "medium", "low"]
+    drivers:
+      - "HS certainty (single vs multiple candidates)"
+      - "Tariff rate availability"
+      - "Missing/assumed inputs (freight, insurance, fees)"
+  anti_double_counting_rules:
+    - "If incoterm is CIF, do not add freight+insurance again unless user explicitly overrides."
+    - "Show inline hints in CalcCard."
+
+data_sources_and_policy:
+  primary_sources_policy:
+    - "SARS tariff/customs documents"
+    - "VAT guidance"
+  supplemental_sources_policy:
+    - "ITAC public notices (anti-dumping)"
+    - "NRCS/SABS regs (manual curation)"
+  storage_policy:
+    must_store_with_each_calc_run:
+      - "tariff_version"
+      - "effective_date"
+      - "source_pointer_short"
+      - "confidence_label"
+  free_api_only_rule: true
+
+database_minimum_schema:
+  db: "postgres"
+  orm: "prisma"
+  tables:
+    - name: "country"
+      fields_minimum: ["id", "slug", "name"]
+    - name: "product_cluster"
+      fields_minimum:
+        [
+          "id",
+          "slug",
+          "name",
+          "canonical_cluster_id(nullable)",
+          "category(nullable)",
+        ]
+    - name: "hs_code"
+      fields_minimum:
+        ["hs6", "description_short", "chapter(nullable)", "heading(nullable)"]
+    - name: "cluster_hs_map"
+      fields_minimum:
+        ["cluster_id", "hs6", "confidence(0-1)", "notes(nullable)"]
+    - name: "tariff_version"
+      fields_minimum: ["id", "label", "effective_date", "source_pointer_short"]
+    - name: "tariff_rate"
+      fields_minimum:
+        [
+          "tariff_version_id",
+          "hs6",
+          "origin_slug",
+          "dest_slug",
+          "duty_rate",
+          "vat_rate",
+          "levies_json(nullable)",
+        ]
+    - name: "docs_requirements"
+      fields_minimum:
+        [
+          "id",
+          "cluster_id(nullable)",
+          "hs6(nullable)",
+          "origin_slug",
+          "dest_slug",
+          "group",
+          "title",
+          "why_short",
+        ]
+    - name: "risk_rules"
+      fields_minimum:
+        [
+          "id",
+          "cluster_id(nullable)",
+          "hs6(nullable)",
+          "origin_slug",
+          "dest_slug",
+          "risk_level",
+          "text_short",
+        ]
+    - name: "page"
+      fields_minimum:
+        - "slug"
+        - "type(product|hs|hub|tool)"
+        - "origin"
+        - "dest"
+        - "index_status(INDEX|NOINDEX)"
+        - "canonical_slug"
+        - "duplicate_of_slug(nullable)"
+        - "readinessScore(int0-100)"
+        - "hasComputedExampleOutputs(bool)"
+        - "blockers(json/string[])"
+        - "last_built_at"
+        - "last_index_status_change_at"
+    - name: "calc_run"
+      fields_minimum:
+        [
+          "id",
+          "created_at",
+          "inputs_json",
+          "outputs_json",
+          "tariff_version_id",
+          "confidence_label",
+          "page_slug(nullable)",
+        ]
+  phase_1_no_auth_behavior:
+    saved_scenarios: "localStorage only (UI present); later persisted with auth."
+
+seo_canonicalization_indexing:
+  default_stance: "NOINDEX until readiness passes"
+  destination_slug_rule:
+    required_slug: "south-africa"
+    lowercase_required: true
+    forbid_iso_example: "ZA"
+  slug_generation:
+    max_length_chars: 60
+    steps:
+      [
+        "lowercase",
+        "replace '&' with 'and'",
+        "remove apostrophes",
+        "non-alphanumerics -> '-'",
+        "collapse hyphens",
+        "trim",
+      ]
+    reserved_words: ["hs"]
+    invalid_behavior:
+      hs6_non_numeric_or_wrong_length: "404"
+  canonicalization:
+    targets_allowed: ["self", "product_page", "hs_page"]
+    synonym_collapse:
+      rule: "If product_cluster.canonical_cluster_id exists, canonicalize to canonical cluster URL; alias pages NOINDEX."
+    product_to_hs_allowed_when:
+      rule: "Product+origin resolves confidently to a single HS6 AND tariff rates exist for that route."
+      threshold_recommended: 0.85
+    near_duplicate_collapse:
+      rule: "If two clusters render identical computed blocks, mark one canonical; other NOINDEX."
+    canonical_tag_requirements:
+      index_pages: "Canonical must point to INDEX-eligible canonical target."
+      noindex_pages: "Still emit canonical to chosen canonical target."
+  index_policy_hard_gates:
+    indexable_only_if_all_true:
+      - "Prefilled calculator has valid HS mapping (or explicit HS)."
+      - "Non-empty breakdown (duty + VAT minimum)."
+      - ">=2 unique data-driven blocks (docs / preference / risk / computed scenarios)."
+      - ">=6 internal links."
+      - "Freshness metadata present (tariff version + last updated)."
+    auto_noindex_if_any_true:
+      - "No HS candidates."
+      - "Missing rate."
+      - "Would output 'contact a broker' without numbers."
+      - "Duplicates another page (canonicalize)."
+  readiness_scoring:
+    threshold:
+      readinessScore_min: 70
+      hasComputedExampleOutputs_required: true
+    weights_0_to_100:
+      hs_candidates_exist: 20
+      any_candidate_has_tariff_rates: 25
+      vat_module_succeeded: 15
+      docs_block_present: 10
+      risk_block_present: 10
+      unique_blocks_count_gte_2: 10
+      internal_links_gte_6: 5
+      freshness_metadata_present: 5
+    computed_examples_override:
+      rule: "If hasComputedExampleOutputs=false, force score=0."
+    computed_example_outputs_definition:
+      - "SSR renders exactly 3 scenario presets."
+      - "Each preset has non-null totals (duty, VAT, total taxes, landed cost/unit)."
+  sitemaps_and_robots:
+    sitemap_inclusion_rule: "Only INDEX pages may appear in sitemaps."
+    robots_meta_rules:
+      when_NOINDEX: "noindex,follow"
+      when_INDEX: "index,follow"
+  internal_links:
+    minimum_links_for_index_pages: 6
+    buckets_in_order:
+      - "A_same_hs_other_origins"
+      - "B_same_origin_related"
+      - "C_tools_pages"
+      - "D_guides_or_hubs_useful_only"
+    tool_links: ["/calculator", "/hs-classifier", "/compare"]
+    link_safety_rules:
+      - "Only link to build-valid pages."
+      - "Prefer canonical targets (avoid alias duplicates)."
+
+build_pass_pipeline:
+  goal: "Deterministically compute per-page readinessScore, index_status, blockers, canonical_slug, duplicate_of_slug."
+  authoritative_seed_workflow:
+    - "Upsert countries + clusters."
+    - "Upsert HS codes + cluster maps."
+    - "Upsert tariff version + rates."
+    - "Upsert docs/risks."
+    - "Generate pages."
+    - "Run build-pass to set readiness/index status/canonicals."
+  outputs_persisted_per_page:
+    - "readinessScore"
+    - "index_status"
+    - "hasComputedExampleOutputs"
+    - "blockers[]"
+    - "canonical_slug"
+    - "duplicate_of_slug"
+  blocker_ids_exact:
+    - "NO_HS_CANDIDATES"
+    - "MISSING_TARIFF_RATE"
+    - "VAT_MODULE_FAILED"
+    - "NO_DOCS_BLOCK"
+    - "NO_RISK_BLOCK"
+    - "INSUFFICIENT_UNIQUE_BLOCKS"
+    - "INSUFFICIENT_INTERNAL_LINKS"
+    - "MISSING_FRESHNESS_METADATA"
+    - "MISSING_COMPUTED_EXAMPLES"
+    - "DUPLICATE_CANONICALIZED"
+
+repo_file_structure_blueprint:
+  repo_name: "importcosts"
+  key_paths_required:
+    next_core:
+      - "src/app/layout.tsx"
+      - "src/app/globals.css"
+      - "src/app/robots.ts"
+      - "src/app/sitemap.ts"
+    seo_routes:
+      - "src/app/(seo)/import-duty-vat-landed-cost/[clusterSlug]/from/[originIso]/to/[destIso]/page.tsx"
+      - "src/app/(seo)/import-duty-vat-landed-cost/hs/[hs6]/from/[originIso]/to/[destIso]/page.tsx"
+      - "src/app/(seo)/import-duty-vat-landed-cost/hs/[hs6]/page.tsx"
+      - "src/app/(seo)/import-duty-vat-landed-cost/page.tsx"
+      - "src/app/(seo)/_components/SeoPageShell.tsx"
+      - "src/app/(seo)/_components/SeoInternalLinks.tsx"
+      - "src/app/(seo)/_components/SeoFaqBlock.tsx"
+    tools_routes:
+      - "src/app/(tools)/calculator/page.tsx"
+      - "src/app/(tools)/hs-classifier/page.tsx"
+      - "src/app/(tools)/compare/page.tsx"
+    saas_shell_routes:
+      - "src/app/(app)/dashboard/page.tsx"
+      - "src/app/(app)/dashboard/saved/page.tsx"
+      - "src/app/(app)/dashboard/watchlist/page.tsx"
+      - "src/app/(app)/settings/page.tsx"
+    api_routes:
+      - "src/app/api/calc/route.ts"
+      - "src/app/api/hs/suggest/route.ts"
+    prisma_and_scripts:
+      - "prisma/schema.prisma"
+      - "prisma/seed/seed.ts"
+      - "scripts/build-pass.ts"
+      - "scripts/qa/seo_smoke.ts"
+      - "scripts/qa/regression_calc.ts"
+  notes:
+    - "middleware.ts exists; later Clerk middleware."
+
+observability_events_minimum:
+  required:
+    - "page_view"
+    - "calc_started"
+    - "calc_completed"
+    - "hs_suggested"
+    - "paywall_viewed"
+    - "checkout_clicked"
+    - "subscription_started"
+  segmentation_required_by:
+    - "page template"
+    - "origin"
+    - "product cluster"
+
+testing_and_ci_minimum:
+  unit_tests_required:
+    - "SEO meta builder returns correct robots + canonical for each page state."
+    - "Slugify deterministic + stable."
+    - "Canonical decision tree: synonym collapse, product->HS canonical, self-canonical."
+  integration_tests_required:
+    - "Build-pass: pages without rates remain NOINDEX with explicit blockers."
+    - "Build-pass: pages with readiness >= 70 + computed presets become INDEX."
+  e2e_tests_required:
+    - "NOINDEX page never appears in sitemap; INDEX page does."
+    - "Money page renders SSR presets and shows Result Preview on load."
+  do_not_ship_failures:
+    - "Any NOINDEX URL appears in sitemap."
+    - "Any INDEX page missing 3 computed presets."
+    - "Any INDEX page missing canonical tag."
+
+milestones_phase_1_mvp:
+  objective: "Ship pSEO + SaaS money pages that feel like an app and are safe to scale."
+  deliverables_in_order:
+    - id: "D1_data_model_seed"
+      includes:
+        [
+          "prisma schema",
+          "seed pipeline",
+          "tariff_version + tariff_rate",
+          "cluster_hs_map",
+          "docs/risks",
+        ]
+    - id: "D2_calc_engine"
+      includes:
+        [
+          "server calc module",
+          "api /api/calc",
+          "why drawer output contract",
+          "anti-double-counting rules",
+        ]
+    - id: "D3_money_page_template"
+      includes:
+        [
+          "win screen above-the-fold order",
+          "below-the-fold blocks",
+          "SSR presets",
+          "sticky action bar",
+        ]
+    - id: "D4_saas_shell"
+      includes:
+        [
+          "desktop sidebar + topbar",
+          "mobile nav + sticky action bar",
+          "premium CTA states",
+        ]
+    - id: "D5_seo_system"
+      includes:
+        [
+          "canonicalization engine",
+          "indexPolicy",
+          "robots.ts + sitemap.ts (INDEX-only)",
+          "internal link grid",
+        ]
+    - id: "D6_build_pass_and_ci"
+      includes:
+        ["build-pass scoring", "persist page status", "tests + gating in CI"]
+  acceptance_criteria_phase_1:
+    - "Any money page loads with computed outputs (or explicitly NOINDEX + blockers)."
+    - "Indexing is deterministic and enforced by sitemap/tests."
+    - "Logged-out users can fully calculate; Save/Export triggers signup CTA."
+
+out_of_scope_phase_1:
+  - "Real authentication & billing implementation (Clerk + payments)"
+  - "Paid third-party APIs"
+  - "Multi-country expansion"
+  - "Fully automated legal/regulatory extraction beyond curated seeds"

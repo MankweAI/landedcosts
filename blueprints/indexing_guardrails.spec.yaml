@@ -1,0 +1,243 @@
+# indexing_guardrails.spec.yaml
+# Source: indexing_guardrails.md [file:2]
+
+spec_version: "1.0" # [file:2]
+title: "Indexing Guardrails — Implementation Spec" # [file:2]
+doc_type: "Engineering spec (strict rules; zero ambiguity)" # [file:2]
+
+applies_to: # [file:2]
+  - "All public pSEO money pages" # [file:2]
+  - "Supporting SEO pages" # [file:2]
+
+scope: # [file:2]
+  wedge: "China -> South Africa" # [file:2]
+  url_destination_slug_required: "south-africa" # [file:2]
+  goal: "Ship at scale without thin/duplicate indexing risk; only index pages that are genuinely useful and uniquely valuable." # [file:2]
+
+core_principles: # [file:2]
+  default_index_status: "NOINDEX" # [file:2]
+  readiness_gated_indexing: true # [file:2]
+  hard_requirement: # [file:2]
+    name: "computed_scenario_presets" # [file:2]
+    rule: "A page must render 3 server-computed scenario presets; if missing data (HS/rates/etc.), it must remain NOINDEX." # [file:2]
+    presets_required: 3 # [file:2]
+    preset_examples: ["R10k", "R50k", "R250k"] # [file:2]
+
+definitions: # [file:2]
+  INDEX_page: "Eligible to appear in sitemap; robots allow indexing; canonical set." # [file:2]
+  NOINDEX_page: "Excluded from sitemap; robots set to noindex; still usable for humans." # [file:2]
+  readinessScore: "Computed numeric score used to decide index eligibility." # [file:2]
+  build_pass: "Automated evaluation step that computes readiness + sets index_status + stores blocker reasons." # [file:2]
+
+data_model: # [file:2]
+  table: "page" # [file:2]
+  required_minimum_fields: # [file:2]
+    - "slug" # [file:2]
+    - "type" # [file:2]
+    - "origin" # [file:2]
+    - "dest" # [file:2]
+    - "index_status (NOINDEX|INDEX)" # [file:2]
+    - "canonical_slug" # [file:2]
+    - "last_built_at" # [file:2]
+  required_publishing_fields: # [file:2]
+    - "readinessScore (int 0-100)" # [file:2]
+    - "hasComputedExampleOutputs (bool)" # [file:2]
+    - "blockers (string[] or json)" # [file:2]
+    - "duplicate_of_slug (nullable string)" # [file:2]
+    - "last_index_status_change_at (timestamp)" # [file:2]
+
+index_policy: # [file:2]
+  hard_gates: # [file:2]
+    indexable_only_if_all_true: # [file:2]
+      - "Pre-filled calculator with valid HS mapping (or explicit HS)." # [file:2]
+      - "Non-empty breakdown (duty + VAT minimum)." # [file:2]
+      - ">=2 unique data-driven blocks (docs / preference / risk / computed scenarios)." # [file:2]
+      - ">=6 internal links." # [file:2]
+      - "Freshness metadata (tariff version + last updated)." # [file:2]
+
+    auto_noindex_if_any_true: # [file:2]
+      - "No HS candidates." # [file:2]
+      - "Missing rate." # [file:2]
+      - "Would output 'contact a broker' without numbers." # [file:2]
+      - "Duplicates another page (canonicalize)." # [file:2]
+
+  canonicalization_rules: # [file:2]
+    - "Synonyms -> one canonical." # [file:2]
+    - "If product+origin resolves confidently to a single HS, canonical may point to HS+origin page." # [file:2]
+    - "Enforce self-canonical matching its slug." # [file:2]
+    - "NOINDEX until depth threshold is met." # [file:2]
+
+readiness_scoring: # [file:2]
+  index_threshold: # [file:2]
+    readinessScore_min: 70 # [file:2]
+    hasComputedExampleOutputs_must_be_true: true # [file:2]
+    rule_text: "Index only if readinessScore >= 70 AND hasComputedExampleOutputs = true." # [file:2]
+
+  inputs_to_evaluate: # [file:2]
+    - "HS candidates exist." # [file:2]
+    - "Tariff rates exist for at least one candidate." # [file:2]
+    - "VAT module works." # [file:2]
+    - "Docs exist." # [file:2]
+    - "Risks exist (or explicitly 'none known')." # [file:2]
+    - "Internal links >= 6." # [file:2]
+
+  weights_deterministic_0_to_100: # [file:2]
+    hs_candidates_exist: 20 # [file:2]
+    any_candidate_has_tariff_rates: 25 # [file:2]
+    vat_module_succeeded: 15 # [file:2]
+    docs_block_present: 10 # [file:2]
+    risk_block_present: 10 # [file:2]
+    unique_blocks_count_gte_2: 10 # [file:2]
+    internal_links_gte_6: 5 # [file:2]
+    freshness_metadata_present: 5 # [file:2]
+
+  computed_examples_override: # [file:2]
+    rule: "If hasComputedExampleOutputs = false, force score to 0 (cannot be indexed)." # [file:2]
+    force_score_to_zero_when_missing: true # [file:2]
+
+computed_example_outputs: # [file:2]
+  field: "hasComputedExampleOutputs" # [file:2]
+  strict_definition: # [file:2]
+    - "SSR renders exactly 3 scenario presets." # [file:2]
+    - "Each preset has non-null totals (at minimum: duty, VAT, total taxes, landed cost/unit)." # [file:2]
+
+build_pass_pipeline: # [file:2]
+  authoritative_seed_workflow: # [file:2]
+    - "Upsert countries + clusters." # [file:2]
+    - "HS codes + cluster maps." # [file:2]
+    - "Tariff version + rates." # [file:2]
+    - "Docs/risks." # [file:2]
+    - "Generate pages." # [file:2]
+    - "Run build pass to set readiness/index status." # [file:2]
+
+  outputs_to_persist_per_page: # [file:2]
+    - "readinessScore" # [file:2]
+    - "index_status (computed from thresholds)" # [file:2]
+    - "hasComputedExampleOutputs" # [file:2]
+    - "blockers[] (human-readable reasons)" # [file:2]
+    - "canonical_slug (resolved or self)" # [file:2]
+    - "duplicate_of_slug (if applicable)" # [file:2]
+
+blockers: # [file:2]
+  storage: "Store blocker IDs (exact strings) to enable filtering dashboards and systematic fixes." # [file:2]
+  ids: # [file:2]
+    - "NO_HS_CANDIDATES" # [file:2]
+    - "MISSING_TARIFF_RATE" # [file:2]
+    - "VAT_MODULE_FAILED" # [file:2]
+    - "NO_DOCS_BLOCK" # [file:2]
+    - "NO_RISK_BLOCK" # [file:2]
+    - "INSUFFICIENT_UNIQUE_BLOCKS" # [file:2]
+    - "INSUFFICIENT_INTERNAL_LINKS" # [file:2]
+    - "MISSING_FRESHNESS_METADATA" # [file:2]
+    - "MISSING_COMPUTED_EXAMPLES" # [file:2]
+    - "DUPLICATE_CANONICALIZED" # [file:2]
+
+robots_sitemap_canonical_enforcement: # [file:2]
+  sitemap_rules_absolute: # [file:2]
+    include_only_where: "index_status = INDEX" # [file:2]
+    exclude_where: "index_status = NOINDEX" # [file:2]
+
+  robots_meta_rules: # [file:2]
+    when_NOINDEX: "noindex,follow" # [file:2]
+    when_INDEX: "index,follow" # [file:2]
+    note: "Follow is required so internal link graph still flows." # [file:2]
+
+  canonical_rules: # [file:2]
+    canonical_tag_required: true # [file:2]
+    when_duplicate_or_synonym: # [file:2]
+      canonical_points_to: "target canonical slug" # [file:2]
+      index_status_required: "NOINDEX" # [file:2]
+    otherwise: # [file:2]
+      canonical_points_to: "self" # [file:2]
+
+  phase_0_safety_rails_required: # [file:2]
+    - "Per-page index/noindex implemented early." # [file:2]
+    - "Canonical tags enforced." # [file:2]
+    - "Robots meta enforced." # [file:2]
+    - "Sitemap partitioning implemented early." # [file:2]
+    - "Covered by tests." # [file:2]
+
+content_depth_uniqueness: # [file:2]
+  rule: "Dynamic H1/intro alone is insufficient; pages must contain structured sections + worked examples + at least one unique table." # [file:2]
+  additional_enforcement: # [file:2]
+    - "Include 'Why these pages aren't spam' blocks: pre-configured examples, doc checklist, risk callouts, calculator pre-loaded." # [file:2]
+    - "Each page must include at least 3 unique examples and unique risk/checklist sections (or explicit 'none known')." # [file:2]
+
+rollout_strategy: # [file:2]
+  waves: # [file:2]
+    - wave: 1 # [file:2]
+      index_pages_target: "20-40" # [file:2]
+    - wave: 2 # [file:2]
+      index_pages_target: 100 # [file:2]
+    - wave: 3 # [file:2]
+      index_pages_target: 200 # [file:2]
+  constraint: "Only pages passing readiness gate can be indexed." # [file:2]
+  rationale: "Phased indexing reduces risk vs dropping huge numbers at once." # [file:2]
+
+monitoring_operations: # [file:2]
+  freshness_stamps_required: "Show last tariff update date/version on every page." # [file:2]
+  no_guessing_fallback_policy: "If tariff missing for an HS, show clear missing-data state (no guesses) and keep NOINDEX." # [file:2]
+  automated_checks: # [file:2]
+    - "Computed examples present." # [file:2]
+    - "Unique blocks count." # [file:2]
+    - "Internal links count." # [file:2]
+    - "Freshness metadata present." # [file:2]
+  qa_sampling: "Add human QA sampling as volume grows." # [file:2]
+
+test_plan_ci_required: # [file:2]
+  seo_meta_builder_unit_tests: # [file:2]
+    - "For each index_status, assert robots + canonical correctness." # [file:2]
+  sitemap_correctness_tests: # [file:2]
+    - "NOINDEX page never appears in sitemap." # [file:2]
+    - "INDEX page appears in sitemap and matches DB index_status=INDEX." # [file:2]
+  build_pass_tests: # [file:2]
+    - "Pages without rates remain NOINDEX with explicit blocker reason." # [file:2]
+    - "Pages with computed examples + readiness >= 70 become INDEX." # [file:2]
+  uniqueness_content_module_tests: # [file:2]
+    - "Assert presence of required structured blocks (decision widgets, worked examples, risks+checklist, save/export CTA)." # [file:2]
+
+reference_pseudocode: # [file:2]
+  language: "text" # [file:2]
+  note: "Blueprint; threshold + computed-examples requirement is mandatory." # [file:2]
+  pseudocode_excerpt: | # [file:2]
+    for page in pages:
+      blockers = []
+      score = 0
+      if !hsCandidates: blockers += NO_HS_CANDIDATES else score += 20
+      if !hasAnyRate: blockers += MISSING_TARIFF_RATE else score += 25
+      if !vatOk: blockers += VAT_MODULE_FAILED else score += 15
+      if !docsBlock: blockers += NO_DOCS_BLOCK else score += 10
+      if !riskBlock: blockers += NO_RISK_BLOCK else score += 10
+      if uniqueBlocks < 2: blockers += INSUFFICIENT_UNIQUE_BLOCKS else score += 10
+      if internalLinks < 6: blockers += INSUFFICIENT_INTERNAL_LINKS else score += 5
+      if !freshnessMeta: blockers += MISSING_FRESHNESS_METADATA else score += 5
+
+      if !computedExamples3: blockers += MISSING_COMPUTED_EXAMPLES
+      if computedExamples3 == false: score = 0
+
+      canonical_slug = resolveCanonical(page)
+      if isDuplicate: blockers += DUPLICATE_CANONICALIZED
+
+      indexable_by_hard_rules =
+          computedExamples3 &&
+          hardRule1..5 true &&
+          no auto-noindex triggers
+
+      page.readinessScore = score
+      page.hasComputedExampleOutputs = computedExamples3
+      page.blockers = blockers
+      page.canonical_slug = canonical_slug
+
+      if score >= 70 && computedExamples3 && indexable_by_hard_rules:
+          page.index_status = INDEX
+      else:
+          page.index_status = NOINDEX
+
+do_not_ship_failures: # [file:2]
+  reject_release_if_any_true: # [file:2]
+    - "NOINDEX pages appear in sitemap." # [file:2]
+    - "Pages index without computed examples." # [file:2]
+    - "Duplicates do not canonicalize correctly." # [file:2]
+    - "Missing-data pages show 'answers' instead of a missing-data state." # [file:2]
+
+

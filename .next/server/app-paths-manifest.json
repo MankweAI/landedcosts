@@ -1,0 +1,3 @@
+{
+  "/(seo)/import-duty-vat-landed-cost/[clusterSlug]/from/[originIso]/to/[destIso]/page": "app/(seo)/import-duty-vat-landed-cost/[clusterSlug]/from/[originIso]/to/[destIso]/page.js"
+}

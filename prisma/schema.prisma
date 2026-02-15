@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PageType {
+  product
+  hs
+  hub
+  tool
+}
+
+enum IndexStatus {
+  INDEX
+  NOINDEX
+}
+
+enum ConfidenceLabel {
+  high
+  medium
+  low
+}
+
+model Country {
+  id   String @id
+  slug String @unique
+  name String
+}
+
+model ProductCluster {
+  id                 String          @id
+  slug               String          @unique
+  name               String
+  category           String?
+  canonicalClusterId String?
+  canonicalCluster   ProductCluster? @relation("ClusterCanonical", fields: [canonicalClusterId], references: [id])
+  aliases            ProductCluster[] @relation("ClusterCanonical")
+}
+
+model HsCode {
+  hs6              String @id
+  descriptionShort String
+  chapter          String?
+  heading          String?
+}
+
+model ClusterHsMap {
+  id         Int     @id @default(autoincrement())
+  clusterId  String
+  hs6        String
+  confidence Float
+  notes      String?
+
+  @@unique([clusterId, hs6])
+}
+
+model TariffVersion {
+  id                 String @id
+  label              String @unique
+  effectiveDate      String
+  sourcePointerShort String
+}
+
+model TariffRate {
+  id              Int     @id @default(autoincrement())
+  tariffVersionId String
+  hs6             String
+  originSlug      String
+  destSlug        String
+  dutyRate        Float
+  vatRate         Float
+  leviesJson      Json?
+
+  @@unique([tariffVersionId, hs6, originSlug, destSlug])
+}
+
+model DocsRequirement {
+  id         String @id
+  clusterId  String?
+  hs6        String?
+  originSlug String
+  destSlug   String
+  group      String
+  title      String
+  whyShort   String
+}
+
+model RiskRule {
+  id         String @id
+  clusterId  String?
+  hs6        String?
+  originSlug String
+  destSlug   String
+  riskLevel  String
+  textShort  String
+}
+
+model Page {
+  slug                     String      @id
+  type                     PageType
+  origin                   String
+  dest                     String
+  indexStatus              IndexStatus
+  canonicalSlug            String
+  duplicateOfSlug          String?
+  readinessScore           Int
+  hasComputedExampleOutputs Boolean
+  blockers                 Json
+  lastBuiltAt              DateTime
+  lastIndexStatusChangeAt  DateTime
+}
+
+model CalcRun {
+  id              String          @id @default(cuid())
+  createdAt       DateTime        @default(now())
+  inputsJson      Json
+  outputsJson     Json
+  tariffVersionId String
+  confidenceLabel ConfidenceLabel
+  pageSlug        String?
+}
+
+model SavedScenario {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  name      String
+  payload   Json
+}
+
+model WatchItem {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  itemKey   String
+  routeSlug String
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  status    String
+  tier      String
+}
+
