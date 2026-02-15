@@ -1,6 +1,9 @@
 export type Incoterm = "FOB" | "CIF" | "DDP";
 export type ConfidenceLabel = "high" | "medium" | "low";
 
+export type PortOfEntry = "DBN" | "CPT" | "JNB" | "PLZ";
+export type ShippingMode = "LCL" | "FCL_20" | "FCL_40" | "AIR";
+
 export type CalcInput = {
   hs6: string;
   origin: string;
@@ -16,6 +19,13 @@ export type CalcInput = {
   fxRate: number;
   hsConfidence?: number;
   overrideCifFreightInsurance?: boolean;
+
+  // Moat / Advanced Inputs
+  portOfEntry?: PortOfEntry;
+  shippingMode?: ShippingMode;
+  useAgencyEstimate?: boolean;
+  risk_demurrageDays?: number;
+  risk_forexBuffer?: number;
 };
 
 export type WhyDrawer = {
@@ -28,7 +38,7 @@ export type WhyDrawer = {
 };
 
 export type BreakdownLine = {
-  id: "duty" | "vat" | "levies" | "fees";
+  id: "duty" | "vat" | "levies" | "fees" | "shipping" | "agency" | "risk";
   label: string;
   amountZar: number;
   why: WhyDrawer;

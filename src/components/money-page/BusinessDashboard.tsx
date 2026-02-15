@@ -5,6 +5,7 @@ import { formatCurrencyZar } from "@/lib/format";
 import type { CalcOutput } from "@/lib/calc/types";
 import type { CalcFormState } from "@/components/money-page/CalcCard";
 import { ConfidenceBadge } from "@/components/money-page/ConfidenceBadge";
+import { ReverseCalcCard } from "@/components/money-page/ReverseCalcCard";
 import { Info, TrendingUp, Wallet, PieChart } from "lucide-react";
 
 type BusinessDashboardProps = {
@@ -137,6 +138,9 @@ export function BusinessDashboard({ output, form, onChange, activePreset }: Busi
                         </div>
                     </div>
                 </div>
+
+                {/* Card 4: Reverse Calculator */}
+                <ReverseCalcCard form={form} onApplyFob={(fobZar) => onChange({ ...form, invoiceValueZar: fobZar })} />
 
                 {/* Card 3: Unit Economics */}
                 <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">

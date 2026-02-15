@@ -41,7 +41,12 @@ function initialForm(model: MoneyPageViewModel): CalcFormState {
     importerIsVatVendor: true,
     sellingPricePerUnitZar: 900,
     fxRate: 18.2,
-    hsConfidence: 0.9
+    hsConfidence: 0.9,
+    portOfEntry: "DBN",
+    shippingMode: "LCL",
+    useAgencyEstimate: true,
+    risk_demurrageDays: 0,
+    risk_forexBuffer: 0
   };
 }
 

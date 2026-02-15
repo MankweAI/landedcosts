@@ -1,4 +1,12 @@
-import type { CalcInput, CalcOutput, ConfidenceLabel, ScenarioPreset, WhyDrawer } from "@/lib/calc/types";
+import type {
+  CalcInput,
+  CalcOutput,
+  ConfidenceLabel,
+  ScenarioPreset,
+  WhyDrawer,
+  PortOfEntry,
+  ShippingMode
+} from "@/lib/calc/types";
 import { getTariffRate, getTariffVersion } from "@/lib/data/repository";
 
 type Roundable = number;
@@ -13,6 +21,48 @@ function sumLevies(customsValue: number, levies?: Record<string, number>) {
   }
   return Object.values(levies).reduce((acc, levyRate) => acc + customsValue * levyRate, 0);
 }
+
+// --- Moat Logic Helpers ---
+
+const PORT_CHARGES_BASE: Record<ShippingMode, number> = {
+  AIR: 850,
+  LCL: 2500,
+  FCL_20: 4500,
+  FCL_40: 6500
+};
+
+const DEMURRAGE_RATES: Record<ShippingMode, number> = {
+  AIR: 500, // min daily
+  LCL: 950,
+  FCL_20: 2200,
+  FCL_40: 4100
+};
+
+function estimatePortCharges(mode: ShippingMode = "LCL", port: PortOfEntry = "DBN"): number {
+  let charge = PORT_CHARGES_BASE[mode];
+  // Durban Surcharge (Congestion/Differential)
+  if (port === "DBN") {
+    charge *= 1.1; // +10%
+  }
+  // Air cargo at JNB is standard, purely weight based usually, but we keep base.
+  return round(charge);
+}
+
+function estimateAgencyFees(value: number): number {
+  // Simple tiered logic: Base R2250 + 0.5% of value > R50k
+  const base = 2250;
+  const surcharge = value > 50000 ? (value - 50000) * 0.005 : 0;
+  return round(base + surcharge);
+}
+
+function calculateDemurrage(days: number, mode: ShippingMode = "LCL"): number {
+  const freeDays = 3;
+  if (days <= freeDays) return 0;
+  const rate = DEMURRAGE_RATES[mode];
+  return (days - freeDays) * rate;
+}
+
+// --------------------------
 
 function confidenceFromInputs(input: CalcInput, hasRate: boolean): ConfidenceLabel {
   if (!hasRate) {
@@ -62,16 +112,53 @@ export function calculateLandedCost(input: CalcInput): CalcOutput | null {
     return null;
   }
 
+  // 1. Forex Risk Buffer
+  const fxBuffer = input.risk_forexBuffer || 0;
+  const effectiveFx = input.fxRate * (1 + fxBuffer / 100);
+  // Note: input.*Zar fields are already in ZAR. 
+  // If we had USD inputs we would use effectiveFx. 
+  // Assumption: The calculator UI handles the conversion using this rate, 
+  // OR the input is raw ZAR. 
+  // *Critical Check*: The types say `invoiceValueZar`. 
+  // If the user inputs USD, the conversion happens BEFORE this function or WE do it?
+  // Use case: The input interface likely converts. 
+  // BUT, to simulate risk, we need to inflate the ZAR value of the goods if they were derived.
+  // SINCE `input` has `invoiceValueZar`, we assume it's already converted at `input.fxRate`.
+  // To apply buffer, we must inflate it relative to the buffer.
+  const riskMultiplier = 1 + fxBuffer / 100;
+
+  // Apply RISK to the value basis (assuming it was FX derived)
+  const customsValueBase = input.invoiceValueZar * riskMultiplier;
+
   const useInlineFreightAndInsurance = input.incoterm !== "CIF" || Boolean(input.overrideCifFreightInsurance);
-  const freight = useInlineFreightAndInsurance ? input.freightZar : 0;
-  const insurance = useInlineFreightAndInsurance ? input.insuranceZar : 0;
-  const customsValue = input.invoiceValueZar + freight + insurance;
+  // Freight & Insurance also inflate if paid in FX. 
+  // We'll assume for "Risk Mode" everything inflates.
+  const freight = (useInlineFreightAndInsurance ? input.freightZar : 0) * riskMultiplier;
+  const insurance = (useInlineFreightAndInsurance ? input.insuranceZar : 0) * riskMultiplier;
+
+  const customsValue = customsValueBase + freight + insurance;
   const dutyAmount = customsValue * rate.dutyRate;
   const levyAmount = sumLevies(customsValue, rate.levies);
-  const vatBase = customsValue + dutyAmount + levyAmount + input.otherFeesZar;
+
+  // Moat: Agency & Port Charges
+  const agencyFee = input.useAgencyEstimate
+    ? estimateAgencyFees(customsValue)
+    : 0; // If explicit input exists, it's in 'otherFeesZar' usually, but we want to break it out?
+  // Current design: `otherFeesZar` is for user manual entry. 
+  // `agencyFee` is calculated. We add it.
+
+  const portCharges = estimatePortCharges(input.shippingMode, input.portOfEntry);
+
+  // Moat: Demurrage Risk
+  const demurrage = calculateDemurrage(input.risk_demurrageDays || 0, input.shippingMode);
+
+  const vatBase = customsValue + dutyAmount + levyAmount + input.otherFeesZar + agencyFee + portCharges + demurrage;
   const vatAmount = vatBase * rate.vatRate;
+
   const totalTaxes = dutyAmount + vatAmount + levyAmount;
-  const landedCostTotal = customsValue + input.otherFeesZar + totalTaxes;
+
+  const landedCostTotal = customsValue + input.otherFeesZar + totalTaxes + agencyFee + portCharges + demurrage;
+
   const landedCostPerUnit = landedCostTotal / Math.max(1, input.quantity);
   const revenue = input.sellingPricePerUnitZar * Math.max(1, input.quantity);
   const grossMarginPercent = revenue > 0 ? ((revenue - landedCostTotal) / revenue) * 100 : 0;
@@ -83,6 +170,12 @@ export function calculateLandedCost(input: CalcInput): CalcOutput | null {
   }
   if (!input.importerIsVatVendor) {
     warnings.push("Non-vendor importer: VAT may be immediate cash outflow.");
+  }
+  if (fxBuffer > 0) {
+    warnings.push(`Risk: Applied ${fxBuffer}% Forex volatility buffer.`);
+  }
+  if ((input.risk_demurrageDays || 0) > 3) {
+    warnings.push(`Risk: Including ${(input.risk_demurrageDays || 0) - 3} days demurrage.`);
   }
 
   return {
@@ -118,30 +211,61 @@ export function calculateLandedCost(input: CalcInput): CalcOutput | null {
         })
       },
       {
-        id: "fees",
-        label: "Other Fees",
-        amountZar: round(input.otherFeesZar),
-        why: buildWhyDrawer({
-          formula: "declared fees",
-          valuesUsed: { otherFees: round(input.otherFeesZar) },
-          ratesApplied: {}
-        })
-      },
-      {
         id: "vat",
         label: "VAT",
         amountZar: round(vatAmount),
         why: buildWhyDrawer({
-          formula: "(customsValue + duty + levies + otherFees) * vatRate",
+          formula: "(CV + Duty + Levies + Fees + Port + Agency) * vatRate",
           valuesUsed: {
             customsValue: round(customsValue),
             duty: round(dutyAmount),
-            levies: round(levyAmount),
-            otherFees: round(input.otherFeesZar)
+            port: round(portCharges),
+            agency: round(agencyFee),
+            risk: round(demurrage)
           },
           ratesApplied: { vatRate: rate.vatRate }
         })
-      }
+      },
+      {
+        id: "shipping",
+        label: "Port & Terminal",
+        amountZar: round(portCharges),
+        why: buildWhyDrawer({
+          formula: "Standard Port Charges + Surcharges",
+          valuesUsed: { mode: input.shippingMode || "LCL", port: input.portOfEntry || "DBN" },
+          ratesApplied: { base: PORT_CHARGES_BASE[input.shippingMode || "LCL"] }
+        })
+      },
+      ...(agencyFee > 0 ? [{
+        id: "agency" as const, // Cast to literal
+        label: "Clearing Agency",
+        amountZar: round(agencyFee),
+        why: buildWhyDrawer({
+          formula: "Base Fee + Disbursement %",
+          valuesUsed: { value: round(customsValue) },
+          ratesApplied: { base: 2250 }
+        })
+      }] : []),
+      ...(demurrage > 0 ? [{
+        id: "risk" as const,
+        label: "Risk: Demurrage",
+        amountZar: round(demurrage),
+        why: buildWhyDrawer({
+          formula: "(excessDays) * dailyRate",
+          valuesUsed: { days: input.risk_demurrageDays || 0 },
+          ratesApplied: { daily: DEMURRAGE_RATES[input.shippingMode || "LCL"] }
+        })
+      }] : []),
+      {
+        id: "fees",
+        label: "Other Manual Fees",
+        amountZar: round(input.otherFeesZar),
+        why: buildWhyDrawer({
+          formula: "user input",
+          valuesUsed: { otherFees: round(input.otherFeesZar) },
+          ratesApplied: {}
+        })
+      },
     ],
     tariffVersionLabel: version.label,
     effectiveDate: version.effectiveDate,
@@ -158,12 +282,17 @@ export function createBaseInput(overrides?: Partial<CalcInput>): CalcInput {
     invoiceValueZar: 50_000,
     freightZar: 6_000,
     insuranceZar: 900,
-    otherFeesZar: 1_200,
+    otherFeesZar: 0, // Default to 0 since we have specific fields now
     quantity: 100,
     importerIsVatVendor: true,
     sellingPricePerUnitZar: 900,
     fxRate: 18.2,
     hsConfidence: 0.9,
+    portOfEntry: "DBN",
+    shippingMode: "LCL",
+    useAgencyEstimate: true,
+    risk_demurrageDays: 0,
+    risk_forexBuffer: 0,
     ...overrides
   };
 }
@@ -193,3 +322,37 @@ export function computeScenarioPresets(baseInput: CalcInput): ScenarioPreset[] {
     .filter((preset): preset is ScenarioPreset => Boolean(preset));
 }
 
+export function calculateMaxFob(
+  targetSellingPriceZar: number,
+  targetMarginPercent: number,
+  baseInput: CalcInput
+): number {
+  let low = 0;
+  let high = targetSellingPriceZar;
+  let bestFobPerUnit = 0;
+  const quantity = Math.max(1, baseInput.quantity);
+
+  // Binary search for Max FOB Per Unit
+  for (let i = 0; i < 20; i++) {
+    const mid = (low + high) / 2;
+    const output = calculateLandedCost({
+      ...baseInput,
+      invoiceValueZar: mid * quantity,
+      sellingPricePerUnitZar: targetSellingPriceZar,
+      // quantity is already in baseInput
+    });
+
+    if (!output) {
+      continue;
+    }
+
+    if (output.grossMarginPercent >= targetMarginPercent) {
+      bestFobPerUnit = mid;
+      low = mid; // We can afford more FOB cost
+    } else {
+      high = mid; // FOB cost too high, need to reduce
+    }
+  }
+
+  return round(bestFobPerUnit);
+}

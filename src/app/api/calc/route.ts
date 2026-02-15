@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { calculateLandedCost } from "@/lib/calc/engine";
 
-const calcSchema = z.object({
+export const calcSchema = z.object({
   hs6: z.string().length(6),
   origin: z.string().min(2),
   dest: z.string().min(2),
@@ -16,7 +16,13 @@ const calcSchema = z.object({
   sellingPricePerUnitZar: z.number().nonnegative(),
   fxRate: z.number().positive(),
   hsConfidence: z.number().min(0).max(1).optional(),
-  overrideCifFreightInsurance: z.boolean().optional()
+  overrideCifFreightInsurance: z.boolean().optional(),
+  // Moat Fields
+  portOfEntry: z.enum(["DBN", "CPT", "JNB", "PLZ"]).optional(),
+  shippingMode: z.enum(["LCL", "FCL_20", "FCL_40", "AIR"]).optional(),
+  useAgencyEstimate: z.boolean().optional(),
+  risk_demurrageDays: z.number().min(0).optional(),
+  risk_forexBuffer: z.number().min(0).optional()
 });
 
 export async function POST(request: Request) {
