@@ -11,6 +11,15 @@ export type ProductCluster = {
   category?: string;
   canonicalClusterId?: string;
   isHero?: boolean;
+  isActive?: boolean;
+  context?: {
+    intro: string;
+    shippingTips: string[];
+  };
+  faqs?: {
+    question: string;
+    answer: string;
+  }[];
 };
 
 export type HsCode = {

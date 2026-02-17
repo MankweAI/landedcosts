@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MoneyPageClient } from "@/components/money-page/MoneyPageClient";
 import { SeoFaqBlock } from "@/app/(seo)/_components/SeoFaqBlock";
@@ -63,11 +64,41 @@ export default async function ProductMoneyPage({ params }: ProductMoneyPageProps
   return (
     <SeoPageShell title="Money Page">
       {module && (
-        <ProductSchema module={module} origin={model.origin} dest={model.dest} />
+        <ProductSchema
+          module={module}
+          origin={model.origin}
+          dest={model.dest}
+          faqs={model.faqs}
+          template={model.template}
+          clusterSlug={model.clusterSlug}
+          hs6={model.hs6}
+        />
       )}
+
+      {model.template === 'hs' && model.clusterSlug && (
+        <div className="mb-6 rounded-xl border border-indigo-100 bg-indigo-50 p-4 text-sm text-indigo-900">
+          <p>
+            Looking for general information? <Link href={`/import-duty-vat-landed-cost/${model.clusterSlug}/from/${model.origin}/to/${model.dest}`} className="underline font-semibold hover:text-indigo-700">View the main guide for this product category &rarr;</Link>
+          </p>
+        </div>
+      )}
+
+      {model.context && (
+        <div className="mb-6 rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
+          <p className="font-semibold">{model.context.intro}</p>
+          {model.context.shippingTips && (
+            <ul className="mt-2 list-disc pl-5">
+              {model.context.shippingTips.map((tip, i) => (
+                <li key={i}>{tip}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
       <MoneyPageClient model={model} />
       <div className="mt-4">
-        <SeoFaqBlock />
+        <SeoFaqBlock customFaqs={model.faqs} />
       </div>
     </SeoPageShell>
   );

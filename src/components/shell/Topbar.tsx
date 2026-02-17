@@ -1,5 +1,4 @@
-"use client";
-
+import { Menu, ShieldCheck } from "lucide-react";
 import { UpgradeCTA } from "@/components/shell/UpgradeCTA";
 
 type TopbarProps = {
@@ -7,39 +6,52 @@ type TopbarProps = {
   onToggleSidebar?: () => void;
 };
 
-export function Topbar({ title = "LandedCost OS", onToggleSidebar }: TopbarProps) {
+export function Topbar({ title = "LandedCost Intelligence", onToggleSidebar }: TopbarProps) {
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur">
-      <div className="mx-auto flex max-w-[1400px] items-center justify-between">
-        <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/80 px-4 py-3 backdrop-blur-md transition-all">
+      <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between">
+        <div className="flex items-center gap-4">
           <button
             onClick={onToggleSidebar}
-            className="lg:hidden text-slate-500 hover:text-slate-700"
+            className="rounded-md p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700 lg:hidden transition-colors"
             aria-label="Toggle menu"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
+            <Menu className="h-6 w-6" />
           </button>
-          <div>
-            <p className="text-sm font-semibold text-slate-900">{title}</p>
-            <p className="text-xs text-slate-500">Decision-grade import costing</p>
+
+          <div className="flex flex-col">
+            <div className="flex flex-wrap items-baseline gap-x-2">
+              <h1 className="text-base font-bold text-slate-900 leading-none tracking-tight sm:text-lg">
+                LandedCost <span className="text-slate-600">Intelligence</span>
+              </h1>
+              <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-700">
+                Beta
+              </span>
+            </div>
+
+            <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10px] sm:text-xs text-slate-500">
+              <a
+                href="https://bigdataquery.co.za"
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-slate-600 hover:text-blue-600 decoration-slate-300 underline-offset-2 hover:underline"
+              >
+                By BigDataQuery
+              </a>
+              <span className="hidden h-3 w-px bg-slate-300 sm:block"></span>
+              <div className="flex items-center gap-1">
+                <ShieldCheck className="h-3 w-3 text-emerald-500" />
+                <span>Verified Data</span>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="hidden sm:block">
-          <UpgradeCTA compact />
+
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:block">
+            <UpgradeCTA compact />
+          </div>
+          {/* Mobile Upgrade Button (Icon only) could go here if needed */}
         </div>
       </div>
     </header>

@@ -35,6 +35,8 @@ export function getMoneyPageViewModel(pathname: string): MoneyPageViewModel | nu
     tariffVersionLabel: page.tariffVersionLabel,
     tariffEffectiveDate: page.tariffEffectiveDate,
     sourcePointerShort: page.sourcePointerShort,
-    lastUpdated: page.lastBuiltAt
+    lastUpdated: page.lastBuiltAt,
+    context: page.context,
+    faqs: page.faqs
   };
 }

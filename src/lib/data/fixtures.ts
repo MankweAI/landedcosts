@@ -34,7 +34,30 @@ export const productClusters: ProductCluster[] = [
     slug: "lithium-batteries",
     name: "Lithium Batteries",
     category: "energy-storage",
-    isHero: true
+    isHero: true,
+    isActive: true,
+    context: {
+      intro: "Lithium-ion batteries (UN 3480/3481) are critical components for backup power and solar systems but are classified as Class 9 Dangerous Goods. Importing them requires strict adherence to IATA and IMDG packing instructions.",
+      shippingTips: [
+        "Ensure MSDS is under 2 years old.",
+        "Verify UN38.3 test summary is available.",
+        "Check if battery is packed with equipment (UN3481) or standalone (UN3480)."
+      ]
+    },
+    faqs: [
+      {
+        question: "What is the import duty on Lithium Batteries?",
+        answer: "As of 2026, Lithium-ion accumulators (HS 8507.60) generally attract a 15% duty rate in South Africa, plus 15% VAT."
+      },
+      {
+        question: "Do I need an NRCS Letter of Authority (LOA)?",
+        answer: "Yes, lithium batteries often fall under compulsory specifications for safety and require an NRCS LOA before customs release."
+      },
+      {
+        question: "Can I air freight lithium batteries?",
+        answer: "Yes, but strictly regulated. They must be declared as Dangerous Goods (Cargo Aircraft Only for bulk) and packed by certified personnel."
+      }
+    ]
   },
   {
     id: "pc-led-lighting",

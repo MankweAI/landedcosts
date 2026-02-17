@@ -5,8 +5,10 @@ import {
   destinationSlug
 } from "@/lib/data/fixtures";
 import {
+  getClusterById,
   getClusterBySlug,
   getClusterHsMaps,
+  getClusterHsMapsByHs,
   getDocRequirementsForContext,
   getHsCodes,
   getProductClusters,
@@ -47,6 +49,14 @@ export type BuiltPage = PageRecord & {
   tariffVersionLabel: string;
   tariffEffectiveDate: string;
   sourcePointerShort: string;
+  context?: {
+    intro: string;
+    shippingTips: string[];
+  };
+  faqs?: {
+    question: string;
+    answer: string;
+  }[];
 };
 
 function generateRawPages(): RawPage[] {
@@ -137,6 +147,35 @@ function buildProductPage(raw: RawPage, nowIso: string): BuiltPage {
   });
   const version = getTariffVersion();
 
+  if (!cluster.isActive) {
+    return {
+      slug: raw.slug,
+      type: raw.type,
+      origin: raw.origin,
+      dest: raw.dest,
+      clusterSlug: cluster.slug,
+      indexStatus: "NOINDEX",
+      canonicalSlug: canonical.canonicalSlug,
+      duplicateOfSlug: canonical.duplicateOfSlug,
+      readinessScore: 0,
+      hasComputedExampleOutputs: false,
+      blockers: ["VERTICAL_INACTIVE"],
+      lastBuiltAt: nowIso,
+      lastIndexStatusChangeAt: nowIso,
+      title: `Import duty & landed cost for ${cluster.name} from ${raw.origin} to South Africa`,
+      description: "This page is currently not active.",
+      docs: [],
+      risks: [],
+      internalLinks: [],
+      presets: [],
+      initialOutput: null,
+      hs6: topHs6,
+      tariffVersionLabel: version.label,
+      tariffEffectiveDate: version.effectiveDate,
+      sourcePointerShort: version.sourcePointerShort
+    };
+  }
+
   const evaluation = evaluateIndexPolicy({
     hasHsCandidates: hsCandidates.length > 0,
     hasAnyTariffRate: hasAnyTariffRate(
@@ -186,7 +225,9 @@ function buildProductPage(raw: RawPage, nowIso: string): BuiltPage {
     hs6: topHs6,
     tariffVersionLabel: version.label,
     tariffEffectiveDate: version.effectiveDate,
-    sourcePointerShort: version.sourcePointerShort
+    sourcePointerShort: version.sourcePointerShort,
+    context: cluster.context,
+    faqs: cluster.faqs
   };
 }
 
@@ -202,6 +243,17 @@ function buildHsPage(raw: RawPage, nowIso: string): BuiltPage {
     destSlug: raw.dest,
     hs6
   });
+
+  // Find related active/hero cluster
+  let relatedClusterSlug: string | undefined;
+  const clusterMaps = getClusterHsMapsByHs(hs6);
+  for (const map of clusterMaps) {
+    const cluster = getClusterById(map.clusterId);
+    if (cluster && cluster.isActive && cluster.isHero) {
+      relatedClusterSlug = cluster.slug;
+      break;
+    }
+  }
   const internalLinks = generateInternalLinksForHs({
     hs6,
     origin: raw.origin,
@@ -243,12 +295,13 @@ function buildHsPage(raw: RawPage, nowIso: string): BuiltPage {
     type: raw.type,
     origin: raw.origin,
     dest: raw.dest,
+    clusterSlug: relatedClusterSlug,
     hs6,
-    indexStatus: evaluation.indexStatus,
+    indexStatus: "NOINDEX",
     canonicalSlug: canonical.canonicalSlug,
     readinessScore: evaluation.readinessScore,
     hasComputedExampleOutputs: presets.length === 3,
-    blockers: [...evaluation.blockers],
+    blockers: [...evaluation.blockers, "THIN_CONTENT_HS_ONLY"],
     lastBuiltAt: nowIso,
     lastIndexStatusChangeAt: nowIso,
     title: `Import duty & landed cost for HS ${hs6} from ${raw.origin} to South Africa`,

@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import "@/app/globals.css";
 
 export const metadata: Metadata = {
-  title: "LandedCost OS",
+  title: "LandedCost Intelligence",
   description: "Decision-grade landed cost and import readiness for China -> South Africa."
 };
 

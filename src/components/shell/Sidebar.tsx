@@ -57,7 +57,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
       >
         <div className="flex h-16 items-center justify-between px-4">
           <Link href="/" onClick={(e) => handleNavClick(e, "/")} className={`flex items-center gap-2 font-bold text-white ${collapsed ? "justify-center w-full" : ""}`}>
-            {collapsed ? <span className="text-xl">LC</span> : <span className="text-xl tracking-tight">LandedCost<span className="text-blue-500">.io</span></span>}
+            {collapsed ? <span className="text-xl">LC</span> : <span className="text-lg tracking-tight font-semibold">LandedCost<span className="text-blue-500"> Intelligence</span></span>}
           </Link>
           {!collapsed && (
             <button

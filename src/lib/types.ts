@@ -24,4 +24,12 @@ export type MoneyPageViewModel = {
   tariffEffectiveDate: string;
   sourcePointerShort: string;
   lastUpdated: string;
+  context?: {
+    intro: string;
+    shippingTips: string[];
+  };
+  faqs?: {
+    question: string;
+    answer: string;
+  }[];
 };
