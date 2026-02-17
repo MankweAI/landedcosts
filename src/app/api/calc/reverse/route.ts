@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { calculateMaxFob } from "@/lib/calc/engine";
-import { calcSchema } from "../route";
+import { calcSchema } from "@/lib/calc/schema";
 
 const reverseSchema = z.object({
     targetSellingPriceZar: z.number().positive(),
