@@ -7,7 +7,9 @@ import type {
   PortOfEntry,
   ShippingMode
 } from "@/lib/calc/types";
+
 import { getTariffRate, getTariffVersion } from "@/lib/data/repository";
+import { getProductModule } from "@/lib/products/registry";
 
 type Roundable = number;
 
@@ -106,15 +108,34 @@ function buildWhyDrawer(params: {
 }
 
 export function calculateLandedCost(input: CalcInput): CalcOutput | null {
-  const rate = getTariffRate(input.hs6, input.origin, input.dest);
+  let rate = getTariffRate(input.hs6, input.origin, input.dest);
   const version = getTariffVersion();
+
   if (!rate) {
-    return null;
+    if (input.customDutyRate !== undefined) {
+      rate = {
+        tariffVersionId: "custom-entry",
+        hs6: input.hs6,
+        originSlug: input.origin,
+        destSlug: input.dest,
+        dutyRate: input.customDutyRate,
+        vatRate: 0.15 // Default VAT
+      };
+    } else {
+      return null;
+    }
+  }
+
+  // 0. Product Module Enrichment
+  const productModule = getProductModule(input.hs6);
+  let workingInput = { ...input };
+  if (productModule?.enrichInputs && input.productSpecificData) {
+    workingInput = productModule.enrichInputs(workingInput, input.productSpecificData);
   }
 
   // 1. Forex Risk Buffer
-  const fxBuffer = input.risk_forexBuffer || 0;
-  const effectiveFx = input.fxRate * (1 + fxBuffer / 100);
+  const fxBuffer = workingInput.risk_forexBuffer || 0;
+  const effectiveFx = workingInput.fxRate * (1 + fxBuffer / 100);
   // Note: input.*Zar fields are already in ZAR. 
   // If we had USD inputs we would use effectiveFx. 
   // Assumption: The calculator UI handles the conversion using this rate, 
@@ -157,7 +178,14 @@ export function calculateLandedCost(input: CalcInput): CalcOutput | null {
 
   const totalTaxes = dutyAmount + vatAmount + levyAmount;
 
-  const landedCostTotal = customsValue + input.otherFeesZar + totalTaxes + agencyFee + portCharges + demurrage;
+  // Moat: Product Specific Extras (e.g. Hazmat Surcharge)
+  const productExtras = productModule?.calculateExtras
+    ? productModule.calculateExtras(workingInput.productSpecificData || {})
+    : [];
+
+  const productExtrasTotal = productExtras.reduce((sum, item) => sum + item.amountZar, 0);
+
+  const landedCostTotal = customsValue + workingInput.otherFeesZar + totalTaxes + agencyFee + portCharges + demurrage + productExtrasTotal;
 
   const landedCostPerUnit = landedCostTotal / Math.max(1, input.quantity);
   const revenue = input.sellingPricePerUnitZar * Math.max(1, input.quantity);
@@ -259,13 +287,14 @@ export function calculateLandedCost(input: CalcInput): CalcOutput | null {
       {
         id: "fees",
         label: "Other Manual Fees",
-        amountZar: round(input.otherFeesZar),
+        amountZar: round(workingInput.otherFeesZar),
         why: buildWhyDrawer({
           formula: "user input",
-          valuesUsed: { otherFees: round(input.otherFeesZar) },
+          valuesUsed: { otherFees: round(workingInput.otherFeesZar) },
           ratesApplied: {}
         })
       },
+      ...productExtras
     ],
     tariffVersionLabel: version.label,
     effectiveDate: version.effectiveDate,

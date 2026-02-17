@@ -10,6 +10,7 @@ export type ProductCluster = {
   name: string;
   category?: string;
   canonicalClusterId?: string;
+  isHero?: boolean;
 };
 
 export type HsCode = {

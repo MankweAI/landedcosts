@@ -22,7 +22,8 @@ export const calcSchema = z.object({
   shippingMode: z.enum(["LCL", "FCL_20", "FCL_40", "AIR"]).optional(),
   useAgencyEstimate: z.boolean().optional(),
   risk_demurrageDays: z.number().min(0).optional(),
-  risk_forexBuffer: z.number().min(0).optional()
+  risk_forexBuffer: z.number().min(0).optional(),
+  customDutyRate: z.number().min(0).max(1).optional()
 });
 
 export async function POST(request: Request) {
@@ -32,6 +33,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid payload", details: parsed.error.flatten() }, { status: 400 });
   }
   const output = calculateLandedCost(parsed.data);
+
   if (!output) {
     return NextResponse.json({ output: null, error: "Missing tariff rate for route" }, { status: 200 });
   }

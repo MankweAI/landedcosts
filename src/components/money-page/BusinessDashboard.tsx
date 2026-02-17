@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { formatCurrencyZar } from "@/lib/format";
 import type { CalcOutput } from "@/lib/calc/types";
-import type { CalcFormState } from "@/components/money-page/CalcCard";
+import type { CalcFormState } from "@/components/money-page/SteppedCalc";
 import { ConfidenceBadge } from "@/components/money-page/ConfidenceBadge";
-import { ReverseCalcCard } from "@/components/money-page/ReverseCalcCard";
-import { Info, TrendingUp, Wallet, PieChart } from "lucide-react";
+import { BusinessOutcomeCard } from "@/components/money-page/BusinessOutcomeCard";
+import { Info, TrendingUp, Wallet } from "lucide-react";
+import { ProductMetrics } from "@/components/money-page/ProductMetrics";
+import { getProductModule } from "@/lib/products/registry";
 
 type BusinessDashboardProps = {
     output: CalcOutput;
@@ -16,24 +17,11 @@ type BusinessDashboardProps = {
 };
 
 export function BusinessDashboard({ output, form, onChange, activePreset }: BusinessDashboardProps) {
-    // Local state for immediate feedback, synced with form
-    const [sellingPrice, setSellingPrice] = useState(form.sellingPricePerUnitZar);
+    const activeModule = getProductModule(form.hs6);
 
-    // Sync local state when form updates externally (e.g. presets)
-    useEffect(() => {
-        setSellingPrice(form.sellingPricePerUnitZar);
-    }, [form.sellingPricePerUnitZar]);
-
-    const handlePriceChange = (value: string) => {
-        const num = Number(value);
-        setSellingPrice(num);
-        onChange({ ...form, sellingPricePerUnitZar: num });
+    const handlePriceChange = (value: number) => {
+        onChange({ ...form, sellingPricePerUnitZar: value });
     };
-
-    // Derived Metrics
-    const landedCostPerUnit = output.landedCostPerUnitZar;
-    const netProfitPerUnit = sellingPrice - landedCostPerUnit;
-    const marginPercent = sellingPrice > 0 ? (netProfitPerUnit / sellingPrice) * 100 : 0;
 
     // VAT Logic
     // Assuming output.landedCostTotalZar is the "Final Cost to Company"
@@ -47,11 +35,17 @@ export function BusinessDashboard({ output, form, onChange, activePreset }: Busi
     // Let's rely on the toggle to just Change the "View" conceptually.
 
     const vatAmount = output.vatAmountZar;
-    const totalCashOutlay = output.landedCostTotalZar + (form.importerIsVatVendor ? vatAmount : 0); // Approx logic: if vendor, landed cost usually excludes VAT, so add it back for cash flow.
-    const netEffectiveCost = output.landedCostTotalZar; // If vendor, this is ex VAT. If not, this is incl VAT.
+    const inlandValues = form.inlandTransportZar || 0;
+    const totalCashOutlay = output.landedCostTotalZar + inlandValues + (form.importerIsVatVendor ? vatAmount : 0);
 
-    const isProfitable = netProfitPerUnit > 0;
-    const marginColor = marginPercent > 30 ? "text-emerald-600 bg-emerald-50 border-emerald-200" : marginPercent > 15 ? "text-amber-600 bg-amber-50 border-amber-200" : "text-rose-600 bg-rose-50 border-rose-200";
+    // Effective Cost for Profitability
+    // If VAT Vendor: Landed Cost (ex VAT) + Inland.
+    // IF NOT Vendor: Landed Cost (incl VAT) + Inland.
+    const netEffectiveCost = output.landedCostTotalZar + inlandValues;
+
+    // Re-calculate Landed Cost Per Unit to include Inland
+    const totalUnits = form.quantity || 1;
+    const landedCostPerUnit = (netEffectiveCost / totalUnits);
 
     return (
         <section className="space-y-4">
@@ -64,39 +58,12 @@ export function BusinessDashboard({ output, form, onChange, activePreset }: Busi
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
-                {/* Card 1: Profitability Simulator */}
-                <div className={`rounded-xl border p-5 shadow-sm transition-all ${marginColor}`}>
-                    <div className="flex items-start justify-between">
-                        <div>
-                            <p className="text-xs font-bold uppercase tracking-wider opacity-70">Profitability</p>
-                            <h3 className="mt-1 text-2xl font-extrabold">{marginPercent.toFixed(1)}% Margin</h3>
-                        </div>
-                        <TrendingUp size={20} className="opacity-70" />
-                    </div>
+                {/* Dynamic Product Metrics (if any) - Inserts as first card for emphasis if present */}
+                {activeModule && activeModule.metrics && activeModule.metrics.length > 0 && (
+                    <ProductMetrics module={activeModule} output={output} inputs={form.productSpecificData || {}} />
+                )}
 
-                    <div className="mt-4 space-y-3">
-                        <div className="rounded-lg bg-white/60 p-2">
-                            <label className="block text-xs text-slate-500">Target Selling Price (Unit)</label>
-                            <div className="flex items-center gap-1">
-                                <span className="font-semibold text-slate-400">R</span>
-                                <input
-                                    type="number"
-                                    value={sellingPrice}
-                                    onChange={(e) => handlePriceChange(e.target.value)}
-                                    className="w-full bg-transparent font-bold text-slate-900 focus:outline-none"
-                                />
-                            </div>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                            <span className="opacity-80">Net Profit / Unit</span>
-                            <span className={`font-bold ${isProfitable ? "text-emerald-700" : "text-rose-700"}`}>
-                                {formatCurrencyZar(netProfitPerUnit)}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Card 2: Cash Flow */}
+                {/* Card 1: Cash Flow */}
                 <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                     <div className="flex items-start justify-between mb-3">
                         <div>
@@ -116,6 +83,12 @@ export function BusinessDashboard({ output, form, onChange, activePreset }: Busi
                             <span className="text-slate-600">VAT (15%)</span>
                             <span className="font-semibold text-slate-900">{formatCurrencyZar(output.vatAmountZar)}</span>
                         </div>
+                        {form.inlandTransportZar && form.inlandTransportZar > 0 && (
+                            <div className="flex justify-between border-t border-slate-200 pt-1 mt-1">
+                                <span className="text-slate-600">Inland Transport</span>
+                                <span className="font-semibold text-slate-900">{formatCurrencyZar(form.inlandTransportZar)}</span>
+                            </div>
+                        )}
                     </div>
 
                     <div className="pt-3 border-t border-slate-100">
@@ -138,32 +111,13 @@ export function BusinessDashboard({ output, form, onChange, activePreset }: Busi
                         </div>
                     </div>
                 </div>
-
-                {/* Card 4: Reverse Calculator */}
-                <ReverseCalcCard form={form} onApplyFob={(fobZar) => onChange({ ...form, invoiceValueZar: fobZar })} />
-
-                {/* Card 3: Unit Economics */}
-                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <div className="flex items-start justify-between">
-                        <div>
-                            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Unit Economics</p>
-                            <h3 className="mt-1 text-2xl font-extrabold text-slate-900">{formatCurrencyZar(landedCostPerUnit)}</h3>
-                            <p className="text-xs text-slate-500">Landed cost per unit</p>
-                        </div>
-                        <PieChart size={20} className="text-slate-400" />
-                    </div>
-
-                    <div className="mt-4 space-y-2">
-                        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 flex">
-                            <div className="bg-blue-500 h-full" style={{ width: `${Math.min((landedCostPerUnit / sellingPrice) * 100, 100)}%` }} />
-                            <div className="bg-emerald-400 h-full" style={{ width: `${Math.max(0, 100 - (landedCostPerUnit / sellingPrice) * 100)}%` }} />
-                        </div>
-                        <div className="flex justify-between text-xs text-slate-500">
-                            <span>Cost ({Math.round((landedCostPerUnit / sellingPrice) * 100)}%)</span>
-                            <span>Profit ({Math.round(marginPercent)}%)</span>
-                        </div>
-                    </div>
-                </div>
+                {/* Card 2: Business Outcome (Profit & ROI) */}
+                <BusinessOutcomeCard
+                    landedCostPerUnit={landedCostPerUnit}
+                    quantity={form.quantity}
+                    initialSellingPrice={form.sellingPricePerUnitZar}
+                    onPriceChange={handlePriceChange}
+                />
             </div>
         </section>
     );

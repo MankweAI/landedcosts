@@ -3,6 +3,11 @@ import { getBuiltPages } from "@/lib/seo/pageRegistry";
 
 export const dynamic = "force-static";
 
+export const metadata = {
+  title: "Import Duty Directory (Index)",
+  robots: "noindex, follow"
+};
+
 export default function ImportDutyDirectoryPage() {
   const pages = getBuiltPages()
     .filter((page) => page.type === "product")

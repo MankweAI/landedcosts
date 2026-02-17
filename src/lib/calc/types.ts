@@ -26,6 +26,9 @@ export type CalcInput = {
   useAgencyEstimate?: boolean;
   risk_demurrageDays?: number;
   risk_forexBuffer?: number;
+  inlandTransportZar?: number;
+  customDutyRate?: number;
+  productSpecificData?: Record<string, any>; // Holds voltage, amp_hours, etc.
 };
 
 export type WhyDrawer = {

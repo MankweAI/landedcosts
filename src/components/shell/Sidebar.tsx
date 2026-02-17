@@ -13,7 +13,9 @@ import {
   type LucideIcon
 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { UpgradeCTA } from "@/components/shell/UpgradeCTA";
+import { WaitlistModal } from "@/components/shell/WaitlistModal";
 
 type NavItem = {
   href: string;
@@ -40,80 +42,93 @@ type SidebarProps = {
 };
 
 export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
+  const [showWaitlist, setShowWaitlist] = useState(false);
+
+  const handleNavClick = (e: React.MouseEvent, href: string) => {
+    e.preventDefault();
+    setShowWaitlist(true);
+  };
+
   return (
-    <aside
-      className={`hidden min-h-screen shrink-0 border-r border-slate-800 bg-slate-900 duration-300 ease-in-out lg:flex lg:flex-col ${collapsed ? "lg:w-[80px]" : "lg:w-[280px]"
-        }`}
-    >
-      <div className="flex h-16 items-center justify-between px-4">
-        <Link href="/" className={`flex items-center gap-2 font-bold text-white ${collapsed ? "justify-center w-full" : ""}`}>
-          {collapsed ? <span className="text-xl">LC</span> : <span className="text-xl tracking-tight">LandedCost<span className="text-blue-500">.io</span></span>}
-        </Link>
-        {!collapsed && (
-          <button
-            onClick={onToggle}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
-          >
-            <ChevronLeft size={18} />
-          </button>
-        )}
-      </div>
-
-      <div className="flex-1 px-3 py-4">
-        {!collapsed && <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Tools</p>}
-        <nav className="space-y-1">
-          {primaryNav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              title={collapsed ? item.label : undefined}
-              className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${collapsed ? "justify-center" : "justify-start"
-                } text-slate-300 hover:bg-slate-800 hover:text-white hover:shadow-md hover:shadow-black/20`}
+    <>
+      <aside
+        className={`hidden min-h-screen shrink-0 border-r border-slate-800 bg-slate-900 duration-300 ease-in-out lg:flex lg:flex-col ${collapsed ? "lg:w-[80px]" : "lg:w-[280px]"
+          }`}
+      >
+        <div className="flex h-16 items-center justify-between px-4">
+          <Link href="/" onClick={(e) => handleNavClick(e, "/")} className={`flex items-center gap-2 font-bold text-white ${collapsed ? "justify-center w-full" : ""}`}>
+            {collapsed ? <span className="text-xl">LC</span> : <span className="text-xl tracking-tight">LandedCost<span className="text-blue-500">.io</span></span>}
+          </Link>
+          {!collapsed && (
+            <button
+              onClick={onToggle}
+              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
             >
-              <item.icon
-                size={20}
-                className={`${collapsed ? "" : "mr-3"} shrink-0 text-slate-400 transition-colors group-hover:text-blue-400`}
-              />
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
-          ))}
-        </nav>
+              <ChevronLeft size={18} />
+            </button>
+          )}
+        </div>
 
-        <div className="my-6 border-t border-slate-800/50" />
+        <div className="flex-1 px-3 py-4">
+          {!collapsed && <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Tools</p>}
+          <nav className="space-y-1">
+            {primaryNav.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={(e) => handleNavClick(e, item.href)}
+                title={collapsed ? item.label : undefined}
+                className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${collapsed ? "justify-center" : "justify-start"
+                  } text-slate-300 hover:bg-slate-800 hover:text-white hover:shadow-md hover:shadow-black/20`}
+              >
+                <item.icon
+                  size={20}
+                  className={`${collapsed ? "" : "mr-3"} shrink-0 text-slate-400 transition-colors group-hover:text-blue-400`}
+                />
+                {!collapsed && <span>{item.label}</span>}
+              </Link>
+            ))}
+          </nav>
 
-        {!collapsed && <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Support</p>}
-        <nav className="space-y-1">
-          {secondaryNav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              title={collapsed ? item.label : undefined}
-              className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${collapsed ? "justify-center" : "justify-start"
-                } text-slate-300 hover:bg-slate-800 hover:text-white hover:shadow-md hover:shadow-black/20`}
+          <div className="my-6 border-t border-slate-800/50" />
+
+          {!collapsed && <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Support</p>}
+          <nav className="space-y-1">
+            {secondaryNav.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={(e) => handleNavClick(e, item.href)}
+                title={collapsed ? item.label : undefined}
+                className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${collapsed ? "justify-center" : "justify-start"
+                  } text-slate-300 hover:bg-slate-800 hover:text-white hover:shadow-md hover:shadow-black/20`}
+              >
+                <item.icon
+                  size={20}
+                  className={`${collapsed ? "" : "mr-3"} shrink-0 text-slate-400 transition-colors group-hover:text-blue-400`}
+                />
+                {!collapsed && <span>{item.label}</span>}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        <div className="mt-auto border-t border-slate-800 p-4">
+          {collapsed ? (
+            <button
+              onClick={onToggle}
+              className="flex w-full justify-center rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white"
             >
-              <item.icon
-                size={20}
-                className={`${collapsed ? "" : "mr-3"} shrink-0 text-slate-400 transition-colors group-hover:text-blue-400`}
-              />
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
-          ))}
-        </nav>
-      </div>
+              <ChevronRight size={20} />
+            </button>
+          ) : (
+            <UpgradeCTA compact={false} />
+          )}
+        </div>
+      </aside>
 
-      <div className="mt-auto border-t border-slate-800 p-4">
-        {collapsed ? (
-          <button
-            onClick={onToggle}
-            className="flex w-full justify-center rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white"
-          >
-            <ChevronRight size={20} />
-          </button>
-        ) : (
-          <UpgradeCTA compact={false} />
-        )}
-      </div>
-    </aside>
+      <WaitlistModal isOpen={showWaitlist} onClose={() => setShowWaitlist(false)} />
+    </>
   );
 }
 

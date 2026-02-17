@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { Star } from "lucide-react";
 import type { CalcOutput, ScenarioPreset } from "@/lib/calc/types";
 import { formatCurrencyZar, formatDate, titleFromSlug } from "@/lib/format";
 import type { MoneyPageViewModel } from "@/lib/types";
 import { trackEvent } from "@/lib/events/track";
 import { BreakdownTable } from "@/components/money-page/BreakdownTable";
 import { BusinessDashboard } from "@/components/money-page/BusinessDashboard";
-import { CalcCard, type CalcFormState } from "@/components/money-page/CalcCard";
+import { SteppedCalc, type CalcFormState } from "@/components/money-page/SteppedCalc";
 import { ConfidenceBadge } from "@/components/money-page/ConfidenceBadge";
 import { DocChecklist } from "@/components/money-page/DocChecklist";
 import { InternalLinkGrid } from "@/components/money-page/InternalLinkGrid";
@@ -16,12 +17,12 @@ import { PreferencePill } from "@/components/money-page/PreferencePill";
 import { PremiumCtaCard } from "@/components/money-page/PremiumCtaCard";
 import { ReferencesAccordion } from "@/components/money-page/ReferencesAccordion";
 import { RiskBanner } from "@/components/money-page/RiskBanner";
-import { ScenarioPresetCard } from "@/components/money-page/ScenarioPresetCard";
 import { ScenarioPresets } from "@/components/money-page/ScenarioPresets";
 import { SectionReveal } from "@/components/money-page/SectionReveal";
-import { SensitivityCard } from "@/components/money-page/SensitivityCard";
 import { StickyActionBar } from "@/components/money-page/StickyActionBar";
 import { VerdictCard } from "@/components/money-page/VerdictCard";
+import { SensitivityGrid } from "@/components/money-page/SensitivityGrid";
+import { WaitlistModal } from "@/components/shell/WaitlistModal";
 
 type MoneyPageClientProps = {
   model: MoneyPageViewModel;
@@ -160,7 +161,7 @@ export function MoneyPageClient({ model }: MoneyPageClientProps) {
           <p className="text-lg text-slate-600 max-w-3xl leading-relaxed">{model.subtitle}</p>
         </div>
 
-        <CalcCard value={form} onChange={setForm} onSubmit={recalculate} />
+        <SteppedCalc value={form} onChange={setForm} onSubmit={recalculate} />
 
         <BusinessDashboard
           output={output}
@@ -168,6 +169,8 @@ export function MoneyPageClient({ model }: MoneyPageClientProps) {
           onChange={setForm}
           activePreset={activePreset}
         />
+
+        <SensitivityGrid form={form} baseOutput={output} />
 
       </div>
 
@@ -239,36 +242,13 @@ export function MoneyPageClient({ model }: MoneyPageClientProps) {
 
         <aside className="col-span-12 space-y-4 lg:col-span-4 lg:sticky lg:top-24 lg:self-start">
 
-          <SensitivityCard output={output} />
-          <ScenarioPresetCard presets={model.presets} />
           <PremiumCtaCard onClick={() => handlePremiumAction("save")} />
         </aside>
       </div>
 
       <StickyActionBar onAction={handlePremiumAction} />
 
-      {modalState === "signup" ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white p-4">
-            <h2 className="text-lg font-semibold text-slate-900">Sign in to continue</h2>
-            <p className="mt-2 text-sm text-slate-700">
-              Save, Export and Watchlist are premium workflow actions. Core calculation remains free.
-            </p>
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setModalState(null)}
-                className="rounded-md border border-slate-300 px-3 py-2 text-sm"
-              >
-                Not now
-              </button>
-              <button type="button" className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white">
-                Sign up
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <WaitlistModal isOpen={modalState === "signup"} onClose={() => setModalState(null)} />
     </>
   );
 }

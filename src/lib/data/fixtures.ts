@@ -33,7 +33,8 @@ export const productClusters: ProductCluster[] = [
     id: "pc-lithium-batteries",
     slug: "lithium-batteries",
     name: "Lithium Batteries",
-    category: "energy-storage"
+    category: "energy-storage",
+    isHero: true
   },
   {
     id: "pc-led-lighting",

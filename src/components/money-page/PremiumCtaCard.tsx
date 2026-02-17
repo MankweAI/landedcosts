@@ -16,7 +16,7 @@ export function PremiumCtaCard({ onClick }: PremiumCtaCardProps) {
         onClick={onClick}
         className="mt-3 w-full rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
       >
-        Sign up (free)
+        Join Waitlist
       </button>
     </section>
   );

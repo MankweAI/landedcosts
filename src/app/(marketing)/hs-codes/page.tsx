@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { getHsCodes } from "@/lib/data/repository";
 
+export const metadata = {
+  title: "HS Codes List",
+  robots: "noindex, follow"
+};
+
 export default function HsCodesPage() {
   const hsCodes = getHsCodes();
   return (

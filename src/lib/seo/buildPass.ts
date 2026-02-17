@@ -20,6 +20,7 @@ import { resolveHsCanonical, resolveProductCanonical } from "@/lib/seo/canonical
 import { evaluateIndexPolicy } from "@/lib/seo/indexPolicy";
 import { generateInternalLinksForHs, generateInternalLinksForProduct, type InternalLink } from "@/lib/seo/internalLinks";
 import { buildHsPath, buildProductPath } from "@/lib/seo/paths";
+import { getProductModule } from "@/lib/products/registry";
 
 export type PageBuildKind = "product" | "hs";
 
@@ -81,7 +82,17 @@ function fingerprintForNearDuplicate(page: BuiltPage): string {
   const presets = page.presets
     .map((preset) => `${preset.id}:${preset.output.totalTaxesZar}:${preset.output.landedCostPerUnitZar}`)
     .join("|");
-  return `${docs}|${risks}|${presets}`;
+
+  let fingerprint = `${docs}|${risks}|${presets}`;
+
+  if (page.hs6) {
+    const module = getProductModule(page.hs6);
+    if (module) {
+      fingerprint += `|module:${module.id}`;
+    }
+  }
+
+  return fingerprint;
 }
 
 function buildProductPage(raw: RawPage, nowIso: string): BuiltPage {
@@ -143,8 +154,8 @@ function buildProductPage(raw: RawPage, nowIso: string): BuiltPage {
     hasValidPrefill: hsCandidates.length > 0,
     hasBreakdownDutyAndVat: Boolean(
       initialOutput &&
-        initialOutput.breakdown.some((line) => line.id === "duty") &&
-        initialOutput.breakdown.some((line) => line.id === "vat")
+      initialOutput.breakdown.some((line) => line.id === "duty") &&
+      initialOutput.breakdown.some((line) => line.id === "vat")
     ),
     isDuplicateCanonicalized: Boolean(canonical.duplicateOfSlug),
     wouldOutputContactBrokerWithoutNumbers: !initialOutput

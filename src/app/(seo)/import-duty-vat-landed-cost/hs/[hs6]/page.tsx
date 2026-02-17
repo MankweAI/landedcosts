@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: HsHubPageProps): Promise<Meta
   return {
     title: `HS ${hs6} import routes`,
     description: `Hub for HS ${hs6} money pages and route variants.`,
-    robots: "index,follow"
+    robots: "noindex, follow"
   };
 }
 

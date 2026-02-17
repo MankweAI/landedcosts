@@ -23,6 +23,13 @@ export function resolveProductCanonical(params: {
   const selfPath = buildProductPath(params.cluster.slug, params.origin, params.dest);
   const canonicalClusterPath = buildProductPath(canonicalCluster.slug, params.origin, params.dest);
 
+  if (params.cluster.isHero) {
+    return {
+      canonicalSlug: selfPath,
+      reason: "self"
+    };
+  }
+
   if (canonicalCluster.id !== params.cluster.id) {
     return {
       canonicalSlug: canonicalClusterPath,

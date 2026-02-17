@@ -26,13 +26,26 @@ export async function generateMetadata({ params }: ProductMoneyPageProps): Promi
       robots: "noindex,follow"
     };
   }
+  const module = model.hs6 ? getProductModule(model.hs6) : undefined;
+
+  let description = "SSR decision-grade import report with duty, VAT, risks, docs, and presets.";
+  if (module) {
+    const fieldNames = module.fields.map(f => f.label).join(", ");
+    description = `Calculate landed cost for ${module.name} including ${fieldNames} adjustments, duty, and VAT.`;
+  }
+
   return buildSeoMetadata({
     title: `Import duty & landed cost for ${clusterSlug} from ${originIso} to South Africa`,
-    description: "SSR decision-grade import report with duty, VAT, risks, docs, and presets.",
+    description,
     canonicalPath: model.canonicalSlug,
     indexStatus: model.indexStatus
   });
 }
+
+import { ProductSchema } from "@/components/seo/ProductSchema";
+import { getProductModule } from "@/lib/products/registry";
+
+// ... (existing imports)
 
 export default async function ProductMoneyPage({ params }: ProductMoneyPageProps) {
   const { clusterSlug, originIso, destIso } = await params;
@@ -44,8 +57,14 @@ export default async function ProductMoneyPage({ params }: ProductMoneyPageProps
   if (!model) {
     notFound();
   }
+
+  const module = model.hs6 ? getProductModule(model.hs6) : undefined;
+
   return (
     <SeoPageShell title="Money Page">
+      {module && (
+        <ProductSchema module={module} origin={model.origin} dest={model.dest} />
+      )}
       <MoneyPageClient model={model} />
       <div className="mt-4">
         <SeoFaqBlock />
