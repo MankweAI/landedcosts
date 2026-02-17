@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-17T13:27:23.519Z",
+  "generatedAt": "2026-02-17T14:17:44.543Z",
   "totals": {
     "total": 18,
     "index": 1,
@@ -20,8 +20,8 @@
       "blockers": [
         "VERTICAL_INACTIVE"
       ],
-      "lastBuiltAt": "2026-02-17T13:27:23.472Z",
-      "lastIndexStatusChangeAt": "2026-02-17T13:27:23.472Z",
+      "lastBuiltAt": "2026-02-17T14:17:44.522Z",
+      "lastIndexStatusChangeAt": "2026-02-17T14:17:44.522Z",
       "title": "Import duty & landed cost for Electric Motors from china to South Africa",
       "description": "This page is currently not active.",
       "docs": [],
@@ -49,8 +49,8 @@
         "VERTICAL_INACTIVE",
         "DUPLICATE_CANONICALIZED"
       ],
-      "lastBuiltAt": "2026-02-17T13:27:23.472Z",
-      "lastIndexStatusChangeAt": "2026-02-17T13:27:23.472Z",
+      "lastBuiltAt": "2026-02-17T14:17:44.522Z",
+      "lastIndexStatusChangeAt": "2026-02-17T14:17:44.522Z",
       "title": "Import duty & landed cost for Electric Motors from india to South Africa",
       "description": "This page is currently not active.",
       "docs": [],
@@ -76,8 +76,8 @@
       "blockers": [
         "THIN_CONTENT_HS_ONLY"
       ],
-      "lastBuiltAt": "2026-02-17T13:27:23.472Z",
-      "lastIndexStatusChangeAt": "2026-02-17T13:27:23.472Z",
+      "lastBuiltAt": "2026-02-17T14:17:44.522Z",
+      "lastIndexStatusChangeAt": "2026-02-17T14:17:44.522Z",
       "title": "Import duty & landed cost for HS 850152 from china to South Africa",
       "description": "HS-specific duty and VAT with landed cost scenarios and explainability.",
       "docs": [
@@ -669,8 +669,8 @@
         "MISSING_COMPUTED_EXAMPLES",
         "THIN_CONTENT_HS_ONLY"
       ],
-      "lastBuiltAt": "2026-02-17T13:27:23.472Z",
-      "lastIndexStatusChangeAt": "2026-02-17T13:27:23.472Z",
+      "lastBuiltAt": "2026-02-17T14:17:44.522Z",
+      "lastIndexStatusChangeAt": "2026-02-17T14:17:44.522Z",
       "title": "Import duty & landed cost for HS 850152 from india to South Africa",
       "description": "HS-specific duty and VAT with landed cost scenarios and explainability.",
       "docs": [],
@@ -741,8 +741,8 @@
       "blockers": [
         "THIN_CONTENT_HS_ONLY"
       ],
-      "lastBuiltAt": "2026-02-17T13:27:23.472Z",
-      "lastIndexStatusChangeAt": "2026-02-17T13:27:23.472Z",
+      "lastBuiltAt": "2026-02-17T14:17:44.522Z",
+      "lastIndexStatusChangeAt": "2026-02-17T14:17:44.522Z",
       "title": "Import duty & landed cost for HS 850760 from china to South Africa",
       "description": "HS-specific duty and VAT with landed cost scenarios and explainability.",
       "docs": [
@@ -1360,8 +1360,8 @@
         "MISSING_COMPUTED_EXAMPLES",
         "THIN_CONTENT_HS_ONLY"
       ],
-      "lastBuiltAt": "2026-02-17T13:27:23.472Z",
-      "lastIndexStatusChangeAt": "2026-02-17T13:27:23.472Z",
+      "lastBuiltAt": "2026-02-17T14:17:44.522Z",
+      "lastIndexStatusChangeAt": "2026-02-17T14:17:44.522Z",
       "title": "Import duty & landed cost for HS 850760 from india to South Africa",
       "description": "HS-specific duty and VAT with landed cost scenarios and explainability.",
       "docs": [],
@@ -1431,8 +1431,8 @@
       "blockers": [
         "THIN_CONTENT_HS_ONLY"
       ],
-      "lastBuiltAt": "2026-02-17T13:27:23.472Z",
-      "lastIndexStatusChangeAt": "2026-02-17T13:27:23.472Z",
+      "lastBuiltAt": "2026-02-17T14:17:44.522Z",
+      "lastIndexStatusChangeAt": "2026-02-17T14:17:44.522Z",
       "title": "Import duty & landed cost for HS 854140 from china to South Africa",
       "description": "HS-specific duty and VAT with landed cost scenarios and explainability.",
       "docs": [
@@ -2026,8 +2026,8 @@
         "NO_DOCS_BLOCK",
         "THIN_CONTENT_HS_ONLY"
       ],
-      "lastBuiltAt": "2026-02-17T13:27:23.472Z",
-      "lastIndexStatusChangeAt": "2026-02-17T13:27:23.472Z",
+      "lastBuiltAt": "2026-02-17T14:17:44.522Z",
+      "lastIndexStatusChangeAt": "2026-02-17T14:17:44.522Z",
       "title": "Import duty & landed cost for HS 854140 from india to South Africa",
       "description": "HS-specific duty and VAT with landed cost scenarios and explainability.",
       "docs": [],
@@ -2595,8 +2595,8 @@
       "blockers": [
         "THIN_CONTENT_HS_ONLY"
       ],
-      "lastBuiltAt": "2026-02-17T13:27:23.472Z",
-      "lastIndexStatusChangeAt": "2026-02-17T13:27:23.472Z",
+      "lastBuiltAt": "2026-02-17T14:17:44.522Z",
+      "lastIndexStatusChangeAt": "2026-02-17T14:17:44.522Z",
       "title": "Import duty & landed cost for HS 940540 from china to South Africa",
       "description": "HS-specific duty and VAT with landed cost scenarios and explainability.",
       "docs": [
@@ -3188,8 +3188,8 @@
         "MISSING_COMPUTED_EXAMPLES",
         "THIN_CONTENT_HS_ONLY"
       ],
-      "lastBuiltAt": "2026-02-17T13:27:23.472Z",
-      "lastIndexStatusChangeAt": "2026-02-17T13:27:23.472Z",
+      "lastBuiltAt": "2026-02-17T14:17:44.522Z",
+      "lastIndexStatusChangeAt": "2026-02-17T14:17:44.522Z",
       "title": "Import duty & landed cost for HS 940540 from india to South Africa",
       "description": "HS-specific duty and VAT with landed cost scenarios and explainability.",
       "docs": [],
@@ -3260,8 +3260,8 @@
       "blockers": [
         "VERTICAL_INACTIVE"
       ],
-      "lastBuiltAt": "2026-02-17T13:27:23.472Z",
-      "lastIndexStatusChangeAt": "2026-02-17T13:27:23.472Z",
+      "lastBuiltAt": "2026-02-17T14:17:44.522Z",
+      "lastIndexStatusChangeAt": "2026-02-17T14:17:44.522Z",
       "title": "Import duty & landed cost for LED Lighting from china to South Africa",
       "description": "This page is currently not active.",
       "docs": [],
@@ -3287,8 +3287,8 @@
       "blockers": [
         "VERTICAL_INACTIVE"
       ],
-      "lastBuiltAt": "2026-02-17T13:27:23.472Z",
-      "lastIndexStatusChangeAt": "2026-02-17T13:27:23.472Z",
+      "lastBuiltAt": "2026-02-17T14:17:44.522Z",
+      "lastIndexStatusChangeAt": "2026-02-17T14:17:44.522Z",
       "title": "Import duty & landed cost for LED Lighting from india to South Africa",
       "description": "This page is currently not active.",
       "docs": [],
@@ -3312,8 +3312,8 @@
       "readinessScore": 100,
       "hasComputedExampleOutputs": true,
       "blockers": [],
-      "lastBuiltAt": "2026-02-17T13:27:23.472Z",
-      "lastIndexStatusChangeAt": "2026-02-17T13:27:23.472Z",
+      "lastBuiltAt": "2026-02-17T14:17:44.522Z",
+      "lastIndexStatusChangeAt": "2026-02-17T14:17:44.522Z",
       "title": "Import duty & landed cost for Lithium Batteries from china to South Africa",
       "description": "Decision-grade landed cost with duty, VAT, risk callouts, docs checklist, and scenario presets.",
       "docs": [
@@ -3953,8 +3953,8 @@
         "INSUFFICIENT_INTERNAL_LINKS",
         "MISSING_COMPUTED_EXAMPLES"
       ],
-      "lastBuiltAt": "2026-02-17T13:27:23.472Z",
-      "lastIndexStatusChangeAt": "2026-02-17T13:27:23.472Z",
+      "lastBuiltAt": "2026-02-17T14:17:44.522Z",
+      "lastIndexStatusChangeAt": "2026-02-17T14:17:44.522Z",
       "title": "Import duty & landed cost for Lithium Batteries from india to South Africa",
       "description": "Decision-grade landed cost with duty, VAT, risk callouts, docs checklist, and scenario presets.",
       "docs": [],
@@ -4042,8 +4042,8 @@
       "blockers": [
         "VERTICAL_INACTIVE"
       ],
-      "lastBuiltAt": "2026-02-17T13:27:23.472Z",
-      "lastIndexStatusChangeAt": "2026-02-17T13:27:23.472Z",
+      "lastBuiltAt": "2026-02-17T14:17:44.522Z",
+      "lastIndexStatusChangeAt": "2026-02-17T14:17:44.522Z",
       "title": "Import duty & landed cost for Photovoltaic Modules from china to South Africa",
       "description": "This page is currently not active.",
       "docs": [],
@@ -4070,8 +4070,8 @@
       "blockers": [
         "VERTICAL_INACTIVE"
       ],
-      "lastBuiltAt": "2026-02-17T13:27:23.472Z",
-      "lastIndexStatusChangeAt": "2026-02-17T13:27:23.472Z",
+      "lastBuiltAt": "2026-02-17T14:17:44.522Z",
+      "lastIndexStatusChangeAt": "2026-02-17T14:17:44.522Z",
       "title": "Import duty & landed cost for Photovoltaic Modules from india to South Africa",
       "description": "This page is currently not active.",
       "docs": [],
@@ -4098,8 +4098,8 @@
       "blockers": [
         "VERTICAL_INACTIVE"
       ],
-      "lastBuiltAt": "2026-02-17T13:27:23.472Z",
-      "lastIndexStatusChangeAt": "2026-02-17T13:27:23.472Z",
+      "lastBuiltAt": "2026-02-17T14:17:44.522Z",
+      "lastIndexStatusChangeAt": "2026-02-17T14:17:44.522Z",
       "title": "Import duty & landed cost for Solar Panels from china to South Africa",
       "description": "This page is currently not active.",
       "docs": [],
@@ -4126,8 +4126,8 @@
       "blockers": [
         "VERTICAL_INACTIVE"
       ],
-      "lastBuiltAt": "2026-02-17T13:27:23.472Z",
-      "lastIndexStatusChangeAt": "2026-02-17T13:27:23.472Z",
+      "lastBuiltAt": "2026-02-17T14:17:44.522Z",
+      "lastIndexStatusChangeAt": "2026-02-17T14:17:44.522Z",
       "title": "Import duty & landed cost for Solar Panels from india to South Africa",
       "description": "This page is currently not active.",
       "docs": [],
