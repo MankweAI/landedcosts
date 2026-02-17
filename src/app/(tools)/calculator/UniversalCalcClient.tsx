@@ -202,7 +202,7 @@ export function UniversalCalcClient() {
                         <div className="mb-4">
                             <h3 className="text-xl font-bold text-slate-900">Tariff Rate Missing</h3>
                             <p className="mt-2 text-sm text-slate-600 leading-relaxed">
-                                We don't have the official tariff for HS <strong>{form.hs6}</strong> from {form.origin} yet.
+                                We don&apos;t have the official tariff for HS <strong>{form.hs6}</strong> from {form.origin} yet.
                             </p>
                             <p className="mt-2 text-sm text-slate-600">
                                 Please enter an estimated duty rate to proceed.

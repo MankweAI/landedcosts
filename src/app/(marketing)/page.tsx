@@ -95,7 +95,7 @@ export default function HomePage() {
             </div>
             <h3 className="mt-6 text-xl font-bold text-white">Route Directory</h3>
             <p className="mt-2 text-sm text-slate-400 group-hover:text-slate-300">
-              Browse pre-calculated "Money Pages" for popular import routes.
+              Browse pre-calculated &quot;Money Pages&quot; for popular import routes.
             </p>
             <div className="mt-6 flex items-center gap-2 text-sm font-medium text-emerald-400 group-hover:text-emerald-300">
               Browse Index <ArrowRight size={16} />

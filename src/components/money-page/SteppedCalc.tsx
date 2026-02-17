@@ -196,7 +196,7 @@ export function SteppedCalc({ value, onChange, onSubmit }: SteppedCalcProps) {
 
                         {/* AI Helper */}
                         <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-4">
-                            <p className="text-sm font-semibold text-blue-900">Don't know the HS Code?</p>
+                            <p className="text-sm font-semibold text-blue-900">Don&apos;t know the HS Code?</p>
                             <div className="mt-2 flex gap-2">
                                 <input
                                     value={description}

@@ -96,9 +96,9 @@ function fingerprintForNearDuplicate(page: BuiltPage): string {
   let fingerprint = `${docs}|${risks}|${presets}`;
 
   if (page.hs6) {
-    const module = getProductModule(page.hs6);
-    if (module) {
-      fingerprint += `|module:${module.id}`;
+    const productModule = getProductModule(page.hs6);
+    if (productModule) {
+      fingerprint += `|module:${productModule.id}`;
     }
   }
 

@@ -6,8 +6,8 @@ import { getProductModule } from "@/lib/products/registry";
 console.log("Starting Verification for Modular Architecture (Lithium Batteries)...");
 
 // 1. Verify Module Registration
-const module = getProductModule("850760");
-if (module?.id === "lithium-batteries") {
+const productModule = getProductModule("850760");
+if (productModule?.id === "lithium-batteries") {
     console.log("✅ Module Resolution: Success (Found 'lithium-batteries' for 850760)");
 } else {
     console.error("❌ Module Resolution: Failed (Expected 'lithium-batteries')");

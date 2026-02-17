@@ -27,12 +27,12 @@ export async function generateMetadata({ params }: ProductMoneyPageProps): Promi
       robots: "noindex,follow"
     };
   }
-  const module = model.hs6 ? getProductModule(model.hs6) : undefined;
+  const productModule = model.hs6 ? getProductModule(model.hs6) : undefined;
 
   let description = "SSR decision-grade import report with duty, VAT, risks, docs, and presets.";
-  if (module) {
-    const fieldNames = module.fields.map(f => f.label).join(", ");
-    description = `Calculate landed cost for ${module.name} including ${fieldNames} adjustments, duty, and VAT.`;
+  if (productModule) {
+    const fieldNames = productModule.fields.map(f => f.label).join(", ");
+    description = `Calculate landed cost for ${productModule.name} including ${fieldNames} adjustments, duty, and VAT.`;
   }
 
   return buildSeoMetadata({
@@ -59,13 +59,13 @@ export default async function ProductMoneyPage({ params }: ProductMoneyPageProps
     notFound();
   }
 
-  const module = model.hs6 ? getProductModule(model.hs6) : undefined;
+  const productModule = model.hs6 ? getProductModule(model.hs6) : undefined;
 
   return (
     <SeoPageShell title="Money Page">
-      {module && (
+      {productModule && (
         <ProductSchema
-          module={module}
+          module={productModule}
           origin={model.origin}
           dest={model.dest}
           faqs={model.faqs}

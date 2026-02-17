@@ -63,7 +63,7 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                     onClick={onClose}
                     className="mt-6 w-full text-center text-xs font-medium text-slate-400 hover:text-slate-600"
                 >
-                    No thanks, I'll stick to the free calculator
+                    No thanks, I&apos;ll stick to the free calculator
                 </button>
             </div>
         </div>
