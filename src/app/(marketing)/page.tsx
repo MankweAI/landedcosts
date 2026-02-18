@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Metadata } from "next";
 import { Calculator, Search, Globe, ShieldCheck, ArrowRight, TrendingUp } from "lucide-react";
+import { Logo } from "@/components/brand/Logo";
 
 export const metadata: Metadata = {
   robots: "noindex, follow"
@@ -8,7 +9,19 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-slate-950 text-white selection:bg-blue-500 selection:text-white">
+    <main className="min-h-screen bg-slate-950 text-white selection:bg-blue-500 selection:text-white relative">
+      <nav className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-6 lg:px-12">
+        <Logo variant="light" className="scale-110" />
+        <div className="flex items-center gap-4">
+          <Link href="/login" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
+            Sign In
+          </Link>
+          <Link href="/calculator" className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 transition-colors">
+            Launch App
+          </Link>
+        </div>
+      </nav>
+
       {/* Background Gradients */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 -mr-40 -mt-40 h-[600px] w-[600px] rounded-full bg-blue-600/10 blur-[100px]" />
@@ -104,7 +117,7 @@ export default function HomePage() {
         </div>
 
         {/* Trust & Footer */}
-        <div className="mt-20 border-t border-slate-800 pt-10 text-center">
+        <div className="mt-20 border-t border-slate-800 pt-10 text-center pb-12">
           <p className="text-sm font-medium text-slate-500 uppercase tracking-widest">Powered by</p>
           <div className="mt-6 flex flex-wrap justify-center gap-8 md:gap-16 opacity-50 grayscale transition-all hover:opacity-100 hover:grayscale-0">
             <div className="flex items-center gap-2 text-white font-semibold text-lg">
@@ -114,6 +127,10 @@ export default function HomePage() {
               <TrendingUp className="text-emerald-500" /> Live Forex
             </div>
           </div>
+          <p className="mt-12 text-xs text-slate-600">
+            &copy; {new Date().getFullYear()} LandedCost Intelligence. Not affiliated with SARS. <br />
+            A <a href="https://bigdataquery.co.za" className="hover:text-slate-400 underline decoration-slate-700 underline-offset-2">BigDataQuery</a> Product.
+          </p>
         </div>
       </div>
     </main>

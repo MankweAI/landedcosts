@@ -1,5 +1,6 @@
 import { Menu, ShieldCheck } from "lucide-react";
 import { UpgradeCTA } from "@/components/shell/UpgradeCTA";
+import { Logo } from "@/components/brand/Logo";
 
 type TopbarProps = {
   title?: string;
@@ -21,10 +22,8 @@ export function Topbar({ title = "LandedCost Intelligence", onToggleSidebar }: T
 
           <div className="flex flex-col">
             <div className="flex flex-wrap items-baseline gap-x-2">
-              <h1 className="text-base font-bold text-slate-900 leading-none tracking-tight sm:text-lg">
-                LandedCost <span className="text-slate-600">Intelligence</span>
-              </h1>
-              <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-700">
+              <Logo variant="dark" className="h-6" textClassName="text-sm sm:text-base" iconClassName="h-5 w-5" />
+              <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-700 ml-2">
                 Beta
               </span>
             </div>

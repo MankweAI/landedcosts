@@ -13,7 +13,7 @@ type Props = {
     legality: LegalityDecision;
 };
 
-const STATUS_CONFIG = {
+export const STATUS_CONFIG = {
     allowed: {
         Icon: ShieldCheck,
         label: "ALLOWED",

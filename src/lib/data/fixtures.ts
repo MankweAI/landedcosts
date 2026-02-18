@@ -239,5 +239,7 @@ export const riskRules: RiskRule[] = [
 ];
 
 export const defaultOrigins = ["china", "india"] as const;
-export const destinationSlug = "south-africa";
+export const destinations = ["south-africa"] as const;
 
+// Legacy support (to be fully replaced by destinations iteration)
+export const destinationSlug = "south-africa";

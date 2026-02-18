@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { UpgradeCTA } from "@/components/shell/UpgradeCTA";
 import { WaitlistModal } from "@/components/shell/WaitlistModal";
+import { Logo } from "@/components/brand/Logo";
 
 type NavItem = {
   href: string;
@@ -57,7 +58,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
       >
         <div className="flex h-16 items-center justify-between px-4">
           <Link href="/" onClick={(e) => handleNavClick(e, "/")} className={`flex items-center gap-2 font-bold text-white ${collapsed ? "justify-center w-full" : ""}`}>
-            {collapsed ? <span className="text-xl">LC</span> : <span className="text-lg tracking-tight font-semibold">LandedCost<span className="text-blue-500"> Intelligence</span></span>}
+            <Logo collapsed={collapsed} variant="light" />
           </Link>
           {!collapsed && (
             <button

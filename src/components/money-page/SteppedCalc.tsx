@@ -124,12 +124,12 @@ export function SteppedCalc({ value, onChange, onSubmit }: SteppedCalcProps) {
                         <h2 className="text-lg font-bold text-slate-900">
                             {currentStep === 1 && "Step 1: Product & Route"}
                             {currentStep === 2 && "Step 2: Values & Logistics"}
-                            {currentStep === 3 && "Step 3: Business & Risk"}
+                            {currentStep === 3 && "Step 3: Final Details"}
                         </h2>
                         <p className="text-sm text-slate-500">
                             {currentStep === 1 && "Start with the basics of what you're importing."}
                             {currentStep === 2 && "Enter invoice values and shipping details."}
-                            {currentStep === 3 && "Refine margins and simulate risks."}
+                            {currentStep === 3 && "Confirm quantity and optional risk factors."}
                         </p>
                     </div>
                     <div className="text-xs font-semibold text-slate-400">
@@ -463,7 +463,7 @@ export function SteppedCalc({ value, onChange, onSubmit }: SteppedCalcProps) {
                                 onClick={() => setCurrentStep(3)}
                                 className="flex-1 rounded-xl bg-blue-600 px-6 py-3 text-base font-bold text-white shadow-md shadow-blue-600/20 transition-all hover:bg-blue-700"
                             >
-                                Next: Business & Risk
+                                Next: Final Details
                             </button>
                         </div>
                     </div>
@@ -499,18 +499,7 @@ export function SteppedCalc({ value, onChange, onSubmit }: SteppedCalcProps) {
                                 />
                             </label>
 
-                            <label className="text-sm">
-                                <span className="mb-1.5 block font-medium text-slate-700">Selling Price / Unit (ZAR)</span>
-                                <div className="relative">
-                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">R</span>
-                                    <input
-                                        type="number"
-                                        value={value.sellingPricePerUnitZar}
-                                        onChange={(event) => setNumber("sellingPricePerUnitZar", event.target.value)}
-                                        className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-7 pr-3 text-slate-900 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    />
-                                </div>
-                            </label>
+
 
                             <label className="text-sm sm:col-span-2">
                                 <div className="flex items-center justify-between mb-1.5 ">

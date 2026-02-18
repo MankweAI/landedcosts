@@ -135,25 +135,14 @@ export function calculateLandedCost(input: CalcInput): CalcOutput | null {
 
   // 1. Forex Risk Buffer
   const fxBuffer = workingInput.risk_forexBuffer || 0;
-  const effectiveFx = workingInput.fxRate * (1 + fxBuffer / 100);
-  // Note: input.*Zar fields are already in ZAR. 
-  // If we had USD inputs we would use effectiveFx. 
-  // Assumption: The calculator UI handles the conversion using this rate, 
-  // OR the input is raw ZAR. 
-  // *Critical Check*: The types say `invoiceValueZar`. 
-  // If the user inputs USD, the conversion happens BEFORE this function or WE do it?
-  // Use case: The input interface likely converts. 
-  // BUT, to simulate risk, we need to inflate the ZAR value of the goods if they were derived.
-  // SINCE `input` has `invoiceValueZar`, we assume it's already converted at `input.fxRate`.
-  // To apply buffer, we must inflate it relative to the buffer.
+  // const effectiveFx = workingInput.fxRate * (1 + fxBuffer / 100); 
   const riskMultiplier = 1 + fxBuffer / 100;
 
   // Apply RISK to the value basis (assuming it was FX derived)
   const customsValueBase = input.invoiceValueZar * riskMultiplier;
 
   const useInlineFreightAndInsurance = input.incoterm !== "CIF" || Boolean(input.overrideCifFreightInsurance);
-  // Freight & Insurance also inflate if paid in FX. 
-  // We'll assume for "Risk Mode" everything inflates.
+
   const freight = (useInlineFreightAndInsurance ? input.freightZar : 0) * riskMultiplier;
   const insurance = (useInlineFreightAndInsurance ? input.insuranceZar : 0) * riskMultiplier;
 
@@ -164,26 +153,33 @@ export function calculateLandedCost(input: CalcInput): CalcOutput | null {
   // Moat: Agency & Port Charges
   const agencyFee = input.useAgencyEstimate
     ? estimateAgencyFees(customsValue)
-    : 0; // If explicit input exists, it's in 'otherFeesZar' usually, but we want to break it out?
-  // Current design: `otherFeesZar` is for user manual entry. 
-  // `agencyFee` is calculated. We add it.
+    : 0;
 
   const portCharges = estimatePortCharges(input.shippingMode, input.portOfEntry);
 
   // Moat: Demurrage Risk
   const demurrage = calculateDemurrage(input.risk_demurrageDays || 0, input.shippingMode);
 
-  const vatBase = customsValue + dutyAmount + levyAmount + input.otherFeesZar + agencyFee + portCharges + demurrage;
-  const vatAmount = vatBase * rate.vatRate;
-
-  const totalTaxes = dutyAmount + vatAmount + levyAmount;
-
-  // Moat: Product Specific Extras (e.g. Hazmat Surcharge)
+  // Moat: Product Specific Extras
   const productExtras = productModule?.calculateExtras
     ? productModule.calculateExtras(workingInput.productSpecificData || {})
     : [];
-
   const productExtrasTotal = productExtras.reduce((sum, item) => sum + item.amountZar, 0);
+
+  // VAT Calculation (South Africa)
+  // 1. Customs VAT Basis (ATV) = (VFD * 1.1) + Duty + Levies
+  // 2. Services VAT Basis = Agency + Port + Demurrage + OtherFees
+  // 3. Total VAT = (ATV + Services) * 15%
+
+  const vfd = customsValue;
+  const upliftRate = 1.1;
+  const atv = (vfd * upliftRate) + dutyAmount + levyAmount;
+
+  const vatableServices = input.otherFeesZar + agencyFee + portCharges + demurrage + productExtrasTotal;
+  const totalVatableValue = atv + vatableServices;
+
+  const vatAmount = totalVatableValue * rate.vatRate;
+  const totalTaxes = dutyAmount + vatAmount + levyAmount;
 
   const landedCostTotal = customsValue + workingInput.otherFeesZar + totalTaxes + agencyFee + portCharges + demurrage + productExtrasTotal;
 
@@ -240,18 +236,17 @@ export function calculateLandedCost(input: CalcInput): CalcOutput | null {
       },
       {
         id: "vat",
-        label: "VAT",
+        label: "VAT (15%)",
         amountZar: round(vatAmount),
         why: buildWhyDrawer({
-          formula: "(CV + Duty + Levies + Fees + Port + Agency) * vatRate",
+          formula: "((VFD * 1.1) + Duty + Levies + Services) * 0.15",
           valuesUsed: {
-            customsValue: round(customsValue),
+            vfd: round(vfd),
+            uplift: "10%",
             duty: round(dutyAmount),
-            port: round(portCharges),
-            agency: round(agencyFee),
-            risk: round(demurrage)
+            services: round(vatableServices)
           },
-          ratesApplied: { vatRate: rate.vatRate }
+          ratesApplied: { vatRate: rate.vatRate, uplift: 0.1 }
         })
       },
       {
@@ -265,7 +260,7 @@ export function calculateLandedCost(input: CalcInput): CalcOutput | null {
         })
       },
       ...(agencyFee > 0 ? [{
-        id: "agency" as const, // Cast to literal
+        id: "agency" as const,
         label: "Clearing Agency",
         amountZar: round(agencyFee),
         why: buildWhyDrawer({
@@ -311,7 +306,7 @@ export function createBaseInput(overrides?: Partial<CalcInput>): CalcInput {
     invoiceValueZar: 50_000,
     freightZar: 6_000,
     insuranceZar: 900,
-    otherFeesZar: 0, // Default to 0 since we have specific fields now
+    otherFeesZar: 0,
     quantity: 100,
     importerIsVatVendor: true,
     sellingPricePerUnitZar: 900,

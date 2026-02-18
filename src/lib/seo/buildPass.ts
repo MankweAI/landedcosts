@@ -2,6 +2,7 @@ import { calculateLandedCost, computeScenarioPresets, createBaseInput } from "@/
 import type { CalcOutput, ScenarioPreset } from "@/lib/calc/types";
 import {
   defaultOrigins,
+  destinations,
   destinationSlug
 } from "@/lib/data/fixtures";
 import {
@@ -63,24 +64,28 @@ function generateRawPages(): RawPage[] {
   const pages: RawPage[] = [];
   const clusters = getProductClusters();
   const hsCodes = getHsCodes();
+
+  // Iterate all combinations: Origin -> Destination -> Product/HS
   for (const origin of defaultOrigins) {
-    for (const cluster of clusters) {
-      pages.push({
-        slug: buildProductPath(cluster.slug, origin, destinationSlug),
-        type: "product",
-        origin,
-        dest: destinationSlug,
-        clusterSlug: cluster.slug
-      });
-    }
-    for (const hs of hsCodes) {
-      pages.push({
-        slug: buildHsPath(hs.hs6, origin, destinationSlug),
-        type: "hs",
-        origin,
-        dest: destinationSlug,
-        hs6: hs.hs6
-      });
+    for (const dest of destinations) {
+      for (const cluster of clusters) {
+        pages.push({
+          slug: buildProductPath(cluster.slug, origin, dest),
+          type: "product",
+          origin,
+          dest,
+          clusterSlug: cluster.slug
+        });
+      }
+      for (const hs of hsCodes) {
+        pages.push({
+          slug: buildHsPath(hs.hs6, origin, dest),
+          type: "hs",
+          origin,
+          dest,
+          hs6: hs.hs6
+        });
+      }
     }
   }
   return pages;
