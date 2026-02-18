@@ -1,6 +1,7 @@
 import type { CalcOutput, ScenarioPreset } from "@/lib/calc/types";
 import type { DocRequirement, RiskRule } from "@/lib/data/types";
 import type { InternalLink } from "@/lib/seo/internalLinks";
+import type { ComplianceResult } from "@/lib/compliance/types";
 
 export type MoneyPageViewModel = {
   slug: string;
@@ -24,6 +25,8 @@ export type MoneyPageViewModel = {
   tariffEffectiveDate: string;
   sourcePointerShort: string;
   lastUpdated: string;
+  /** ImportOS: Compliance engine output */
+  complianceResult: ComplianceResult | null;
   context?: {
     intro: string;
     shippingTips: string[];

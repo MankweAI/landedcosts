@@ -23,6 +23,13 @@ import { StickyActionBar } from "@/components/money-page/StickyActionBar";
 import { VerdictCard } from "@/components/money-page/VerdictCard";
 import { SensitivityGrid } from "@/components/money-page/SensitivityGrid";
 import { WaitlistModal } from "@/components/shell/WaitlistModal";
+import { LegalityDecisionCard } from "@/components/money-page/LegalityDecisionCard";
+import { PermitFlagGrid } from "@/components/money-page/PermitFlagGrid";
+import { CertificationMatrix } from "@/components/money-page/CertificationMatrix";
+import { ChecklistBuilder } from "@/components/money-page/ChecklistBuilder";
+import { ProcessTimeline } from "@/components/money-page/ProcessTimeline";
+import { CompliancePackPreview } from "@/components/money-page/CompliancePackPreview";
+import { CompliancePackPrintView } from "@/components/money-page/CompliancePackPrintView";
 
 type MoneyPageClientProps = {
   model: MoneyPageViewModel;
@@ -139,6 +146,27 @@ export function MoneyPageClient({ model }: MoneyPageClientProps) {
     setModalState("signup");
   }
 
+  const complianceResult = model.complianceResult;
+  const isProhibited = complianceResult?.legality.status === "prohibited";
+
+  const allRequirements = complianceResult
+    ? [
+      ...complianceResult.compliance.permitsRequired,
+      ...complianceResult.compliance.certificationsRequired,
+      ...complianceResult.compliance.inspectionsRequired,
+      ...complianceResult.compliance.labelingRequired,
+    ]
+    : [];
+
+  function handleDownloadPack() {
+    trackEvent("compliance_pack_download", {
+      pageTemplate: model.template,
+      origin: model.origin,
+      productCluster: model.clusterSlug,
+    });
+    window.print();
+  }
+
   return (
     <>
       <div className="mb-8 space-y-4">
@@ -161,16 +189,57 @@ export function MoneyPageClient({ model }: MoneyPageClientProps) {
           <p className="text-lg text-slate-600 max-w-3xl leading-relaxed">{model.subtitle}</p>
         </div>
 
-        <SteppedCalc value={form} onChange={setForm} onSubmit={recalculate} />
+        {/* ── Section 1: LEGALITY (Decision-First) ── */}
+        {complianceResult && (
+          <LegalityDecisionCard legality={complianceResult.legality} />
+        )}
 
-        <BusinessDashboard
-          output={output}
-          form={form}
-          onChange={setForm}
-          activePreset={activePreset}
-        />
+        {/* ── Section 2: PERMITS & COMPLIANCE ── */}
+        {complianceResult && (
+          <SectionReveal title="Permits & Compliance" subtitle="Required permits, registrations, and inspections for this route." defaultOpen={true} variant="blue">
+            <PermitFlagGrid
+              permits={[
+                ...complianceResult.compliance.permitsRequired,
+                ...complianceResult.compliance.inspectionsRequired,
+              ]}
+              title="Permits & Registrations"
+              subtitle="Regulatory approvals needed before importing."
+            />
+          </SectionReveal>
+        )}
 
-        <SensitivityGrid form={form} baseOutput={output} />
+        {/* ── Section 3: STANDARDS & CERTIFICATIONS ── */}
+        {complianceResult && (
+          <SectionReveal title="Standards & Certifications" subtitle="Technical standards, testing, and labeling requirements." defaultOpen={true} variant="emerald">
+            <CertificationMatrix
+              certifications={complianceResult.compliance.certificationsRequired}
+              labeling={complianceResult.compliance.labelingRequired}
+            />
+          </SectionReveal>
+        )}
+
+        {/* ── Section 4: COSTS (existing engine) ── */}
+        {!isProhibited && (
+          <>
+            <SteppedCalc value={form} onChange={setForm} onSubmit={recalculate} />
+
+            <BusinessDashboard
+              output={output}
+              form={form}
+              onChange={setForm}
+              activePreset={activePreset}
+            />
+
+            <SensitivityGrid form={form} baseOutput={output} />
+          </>
+        )}
+
+        {isProhibited && (
+          <section className="rounded-xl border-2 border-rose-300 bg-rose-50 p-6 text-center">
+            <p className="text-lg font-bold text-rose-800">Cost calculation unavailable</p>
+            <p className="text-sm text-rose-600 mt-1">This product is prohibited for import on this route. Cost calculations are hidden.</p>
+          </section>
+        )}
 
       </div>
 
@@ -241,7 +310,15 @@ export function MoneyPageClient({ model }: MoneyPageClientProps) {
         </div>
 
         <aside className="col-span-12 space-y-4 lg:col-span-4 lg:sticky lg:top-24 lg:self-start">
-
+          {complianceResult && allRequirements.length > 0 && (
+            <ChecklistBuilder requirements={allRequirements} />
+          )}
+          {complianceResult && (
+            <CompliancePackPreview
+              onDownload={handleDownloadPack}
+              hasComplianceData={complianceResult.legality.status !== "unknown"}
+            />
+          )}
           <PremiumCtaCard onClick={() => handlePremiumAction("save")} />
         </aside>
       </div>
@@ -249,6 +326,18 @@ export function MoneyPageClient({ model }: MoneyPageClientProps) {
       <StickyActionBar onAction={handlePremiumAction} />
 
       <WaitlistModal isOpen={modalState === "signup"} onClose={() => setModalState(null)} />
+
+      {/* Hidden print-only compliance pack */}
+      {complianceResult && (
+        <CompliancePackPrintView
+          complianceResult={complianceResult}
+          output={output}
+          headingLabel={headingLabel}
+          origin={titleFromSlug(model.origin)}
+          dest="South Africa"
+          generatedDate={new Date().toLocaleDateString("en-ZA")}
+        />
+      )}
     </>
   );
 }

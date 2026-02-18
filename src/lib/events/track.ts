@@ -5,7 +5,8 @@ type EventName =
   | "hs_suggested"
   | "paywall_viewed"
   | "checkout_clicked"
-  | "subscription_started";
+  | "subscription_started"
+  | "compliance_pack_download";
 
 type EventPayload = {
   pageTemplate?: string;
