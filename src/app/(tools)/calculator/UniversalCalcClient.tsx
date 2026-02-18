@@ -4,13 +4,14 @@ import Link from "next/link";
 import { useState } from "react";
 import type { CalcOutput } from "@/lib/calc/types";
 import { trackEvent } from "@/lib/events/track";
-import { BusinessDashboard } from "@/components/money-page/BusinessDashboard";
+
 import { SteppedCalc, type CalcFormState } from "@/components/money-page/SteppedCalc";
 import { BreakdownTable } from "@/components/money-page/BreakdownTable";
 import { SectionReveal } from "@/components/money-page/SectionReveal";
 import { WaitlistModal } from "@/components/shell/WaitlistModal";
 import { StickyActionBar } from "@/components/money-page/StickyActionBar";
 import { PremiumCtaCard } from "@/components/money-page/PremiumCtaCard";
+import { LandedCostSummary } from "@/components/money-page/LandedCostSummary";
 
 function initialForm(): CalcFormState {
     return {
@@ -170,11 +171,13 @@ export function UniversalCalcClient() {
 
                 {hasCalculated && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
-                        <BusinessDashboard
+                        <LandedCostSummary
                             output={output}
-                            form={form}
-                            onChange={setForm}
-                            activePreset="custom"
+                            tariffVersionLabel={output.tariffVersionLabel}
+                            effectiveDate={output.effectiveDate}
+                            sourcePointerShort={output.sourcePointerShort}
+                            sellingPrice={form.sellingPricePerUnitZar}
+                            isVatVendor={form.importerIsVatVendor}
                         />
 
                         <div className="grid grid-cols-12 gap-4">

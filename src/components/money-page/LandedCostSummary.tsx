@@ -6,13 +6,27 @@ import { DataFreshnessBadge } from "@/components/money-page/DataFreshnessBadge";
 
 type LandedCostSummaryProps = {
     output: CalcOutput;
-    tariffVersionLabel: string;
-    effectiveDate: string;
-    sourcePointerShort: string;
+    tariffVersionLabel?: string;
+    effectiveDate?: string;
+    sourcePointerShort?: string;
+    sellingPrice?: number;
+    isVatVendor?: boolean;
 };
 
-export function LandedCostSummary({ output, tariffVersionLabel, effectiveDate, sourcePointerShort }: LandedCostSummaryProps) {
+export function LandedCostSummary({
+    output,
+    tariffVersionLabel = "",
+    effectiveDate = "",
+    sourcePointerShort = "",
+    sellingPrice,
+    isVatVendor = true
+}: LandedCostSummaryProps) {
     if (output.landedCostTotalZar === 0) return null;
+
+    // Optional Profit Calculation
+    const profit = sellingPrice ? sellingPrice - output.landedCostPerUnitZar : 0;
+    const margin = sellingPrice && sellingPrice > 0 ? (profit / sellingPrice) * 100 : 0;
+    const isProfitable = profit > 0;
 
     return (
         <section className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
@@ -62,6 +76,28 @@ export function LandedCostSummary({ output, tariffVersionLabel, effectiveDate, s
                         <span className="font-medium text-slate-500">{formatCurrencyZar(output.totalTaxesZar)}</span>
                     </div>
                 </div>
+
+                {/* Optional: Business Viability (Compact) */}
+                {sellingPrice && sellingPrice > 0 && (
+                    <div className="flex flex-col gap-3 border-t lg:border-t-0 lg:border-l border-slate-100 pt-4 lg:pt-0 lg:pl-6">
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm text-slate-600">Selling Price</span>
+                            <span className="font-medium text-slate-900">{formatCurrencyZar(sellingPrice)}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm text-slate-600">Net Profit</span>
+                            <span className={`font-bold ${isProfitable ? "text-emerald-600" : "text-red-600"}`}>
+                                {formatCurrencyZar(profit)}
+                            </span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs text-slate-400 pt-2 border-t border-slate-50">
+                            <span>Margin</span>
+                            <span className={`font-medium ${margin >= 30 ? "text-emerald-500" : margin >= 15 ? "text-amber-500" : "text-red-500"}`}>
+                                {margin.toFixed(1)}%
+                            </span>
+                        </div>
+                    </div>
+                )}
             </div>
         </section>
     );

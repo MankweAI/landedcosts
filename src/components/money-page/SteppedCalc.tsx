@@ -499,6 +499,20 @@ export function SteppedCalc({ value, onChange, onSubmit }: SteppedCalcProps) {
                                 />
                             </label>
 
+                            <label className="text-sm">
+                                <span className="mb-1.5 block font-medium text-slate-700">Target Selling Price (Per Unit)</span>
+                                <div className="relative">
+                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">R</span>
+                                    <input
+                                        type="number"
+                                        value={value.sellingPricePerUnitZar || ""}
+                                        onChange={(event) => setNumber("sellingPricePerUnitZar", event.target.value)}
+                                        placeholder="Optional"
+                                        className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-7 pr-3 text-slate-900 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    />
+                                </div>
+                            </label>
+
 
 
                             <label className="text-sm sm:col-span-2">
