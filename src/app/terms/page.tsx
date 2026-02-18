@@ -9,7 +9,7 @@ export default function TermsPage() {
                 <h2>Terms</h2>
                 <p>
                     By using ImportOS, you agree to these terms.
-                    The service is provided "as is" without warranty of any kind.
+                    The service is provided &quot;as is&quot; without warranty of any kind.
                 </p>
             </div>
         </AppShell>

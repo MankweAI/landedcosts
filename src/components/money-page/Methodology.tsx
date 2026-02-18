@@ -58,7 +58,7 @@ export function Methodology() {
                         Import VAT
                     </h3>
                     <p className="mt-1 text-sm text-slate-600">
-                        South Africa charges 15% VAT on the "Added Tax Value" (ATV). The ATV includes a standard 10% uplift on the Customs Value, plus any duties and levies. Service fees are also subject to VAT.
+                        South Africa charges 15% VAT on the &quot;Added Tax Value&quot; (ATV). The ATV includes a standard 10% uplift on the Customs Value, plus any duties and levies. Service fees are also subject to VAT.
                     </p>
                     <div className="mt-2 text-xs font-mono bg-slate-50 border border-slate-200 p-2 rounded text-slate-500">
                         ATV = (VFD × 1.1) + Duty + Levies<br />
